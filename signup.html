@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | LCE Project Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body" style="padding-top:40px;padding-bottom:40px;">
+
+  <div class="auth-logo">
+    <img src="LCE LOGO.png" alt="LCE Lloyds">
+    <div class="dept-name">Civil &amp; Structural Department · Project Hub</div>
+  </div>
+
+  <div class="auth-card" style="max-width:540px;">
+    <h2>Create your account</h2>
+    <p class="auth-sub">Use your company email and employee ID to register.</p>
+
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <form id="signupForm" onsubmit="handleSignup(event)">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="name" class="form-control" placeholder="As per ID card" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Employee ID *</label>
+          <input type="text" id="empId" class="form-control" placeholder="e.g. 9000097" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Company Email *</label>
+        <input type="email" id="email" class="form-control" placeholder="yourname@lloyds.in" required>
+        <div class="form-hint">Must end with @lloyds.in</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Designation *</label>
+          <select id="designation" class="form-control" required onchange="onDesignationChange()">
+            <option value="">— Select Designation —</option>
+            <optgroup label="── Advisor (L0) ──">
+              <option value="Assistant Vice President">Assistant Vice President</option>
+            </optgroup>
+            <optgroup label="── HOD (L) ──">
+              <option value="Deputy General Manager">Deputy General Manager</option>
+              <option value="Assistant General Manager">Assistant General Manager</option>
+            </optgroup>
+            <optgroup label="── Manager (L1) ──">
+              <option value="Manager">Manager</option>
+            </optgroup>
+            <optgroup label="── Deputy Manager (L2) ──">
+              <option value="Deputy Manager">Deputy Manager</option>
+            </optgroup>
+            <optgroup label="── Designer (L3) ──">
+              <option value="Assistant Manager">Assistant Manager</option>
+              <option value="GET">GET</option>
+              <option value="Senior Executive Engineer">Senior Executive Engineer</option>
+              <option value="Senior Executive Engineer (Site)">Senior Executive Engineer (Site)</option>
+            </optgroup>
+            <optgroup label="── Civil Drafting (L4) ──">
+              <option value="Executive Engineer (D)">Executive Engineer (D)</option>
+              <option value="Junior Executive Engineer (D)">Junior Executive Engineer (D)</option>
+              <option value="Junior Executive Engineer Document Controller">Jr. Executive Engineer (Document Controller)</option>
+              <option value="Diploma Trainee Eng (D)">Diploma Trainee Eng (D)</option>
+            </optgroup>
+            <optgroup label="── Tekla Check (T1) ──">
+              <option value="Junior Executive Engineer (T)">Junior Executive Engineer (T)</option>
+              <option value="Senior Draughtsman (T)">Senior Draughtsman (T)</option>
+            </optgroup>
+            <optgroup label="── Tekla Detailing (T2) ──">
+              <option value="Junior Executive Engineer (TD)">Junior Executive Engineer (TD)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grade</label>
+          <input type="text" id="grade" class="form-control" placeholder="Auto-filled" readonly style="background:#f8f9fa;color:var(--text-muted);">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Department *</label>
+        <select id="dept" class="form-control" required>
+          <option value="">— Select Department —</option>
+          <option value="Civil &amp; Structural" selected>Civil &amp; Structural</option>
+          <option value="Architecture">Architecture</option>
+          <option value="MEP">MEP</option>
+          <option value="Project Management Office">Project Management Office</option>
+          <option value="IT &amp; Systems">IT &amp; Systems</option>
+          <option value="HR &amp; Administration">HR &amp; Administration</option>
+          <option value="Finance &amp; Accounts">Finance &amp; Accounts</option>
+          <option value="QHSE">QHSE</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:10px;">Create 4-Digit Passcode *</label>
+        <div class="pin-group" id="pinGroup">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="p0" onkeyup="pinNav(event,0)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="p1" onkeyup="pinNav(event,1)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="p2" onkeyup="pinNav(event,2)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="p3" onkeyup="pinNav(event,3)">
+        </div>
+        <div class="form-hint" style="text-align:center;">You'll use this passcode every time you log in.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:10px;">Confirm Passcode *</label>
+        <div class="pin-group" id="pinGroup2">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="cp0" onkeyup="pinNav2(event,0)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="cp1" onkeyup="pinNav2(event,1)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="cp2" onkeyup="pinNav2(event,2)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" pattern="[0-9]" id="cp3" onkeyup="pinNav2(event,3)">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:8px;">
+        Create Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Login here</a>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    APP.seedAdmin();
+    if (APP.getCurrentUser()) window.location.href = 'dashboard.html';
+
+    function onDesignationChange() {
+      const val = document.getElementById('designation').value;
+      const desig = APP.DESIGNATIONS.find(d => d.title === val);
+      document.getElementById('grade').value = desig ? desig.grade : '';
+    }
+
+    function pinNav(e, idx) {
+      const ids = ['p0','p1','p2','p3'];
+      const v = e.target.value;
+      if (!/^\d$/.test(v)) { e.target.value = ''; return; }
+      if (idx < 3) document.getElementById(ids[idx + 1]).focus();
+    }
+
+    function pinNav2(e, idx) {
+      const ids = ['cp0','cp1','cp2','cp3'];
+      const v = e.target.value;
+      if (!/^\d$/.test(v)) { e.target.value = ''; return; }
+      if (idx < 3) document.getElementById(ids[idx + 1]).focus();
+    }
+
+    function getPin() { return ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join(''); }
+    function getConfirmPin() { return ['cp0','cp1','cp2','cp3'].map(id => document.getElementById(id).value).join(''); }
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const name  = document.getElementById('name').value.trim();
+      const empId = document.getElementById('empId').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const desig = document.getElementById('designation').value;
+      const dept  = document.getElementById('dept').value;
+      const pin   = getPin();
+      const cpin  = getConfirmPin();
+
+      if (!email.endsWith('@lloyds.in')) {
+        return APP.showAlert('alertBox', 'Email must end with @lloyds.in. Only company emails are allowed.');
+      }
+      if (!desig) {
+        return APP.showAlert('alertBox', 'Please select your designation.');
+      }
+      if (!dept) {
+        return APP.showAlert('alertBox', 'Please select your department.');
+      }
+      if (pin.length !== 4) {
+        return APP.showAlert('alertBox', 'Please enter all 4 digits of your passcode.');
+      }
+      if (pin !== cpin) {
+        return APP.showAlert('alertBox', 'Passcodes do not match. Please re-enter.');
+      }
+
+      const result = APP.createUser({ name, empId, email, designation: desig, dept, passcode: pin });
+      if (result.error) {
+        return APP.showAlert('alertBox', result.error);
+      }
+
+      APP.showAlert('alertBox', 'Account created successfully! Redirecting to login...', 'success');
+      setTimeout(() => window.location.href = 'login.html', 1500);
+    }
+  </script>
+</body>
+</html>

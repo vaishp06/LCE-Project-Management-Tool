@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Detail | LCE Project Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* QC Sign-off styles */
+    .checklist-card {
+      background: white; border-radius: var(--radius-lg); border: 1px solid var(--border);
+      padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+      border-left: 4px solid var(--purple);
+    }
+    .checklist-card.sent { border-left-color: var(--green); }
+    .checklist-title { font-size: 15px; font-weight: 600; color: var(--purple-dark); margin-bottom: 4px; }
+    .checklist-desc  { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+    .reviewer-row {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: var(--bg); border-radius: var(--radius); margin-bottom: 6px;
+      border: 1px solid var(--border);
+    }
+    .reviewer-row.signed   { background: var(--green-pale); border-color: #C8E6C9; }
+    .reviewer-row .rv-name { flex: 1; font-size: 13px; font-weight: 500; }
+    .reviewer-row .rv-desig { font-size: 11px; color: var(--text-muted); }
+    .reviewer-row .rv-date  { font-size: 11px; color: var(--green-dark); }
+    .sign-check { width: 20px; height: 20px; accent-color: var(--green); }
+    .hod-signoff {
+      margin-top: 14px; padding: 14px; background: #F3EEF9;
+      border-radius: var(--radius); border: 1px solid var(--border);
+    }
+    .sent-banner {
+      background: var(--green-pale); border: 1px solid #C8E6C9;
+      border-radius: var(--radius); padding: 10px 14px;
+      font-size: 13px; color: var(--green-dark); font-weight: 600;
+      display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    }
+    /* L1 tracker */
+    .task-tracker {
+      background: #F3EEF9; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 10px 14px; margin-bottom: 6px;
+    }
+    .tracker-title { font-size: 13px; font-weight: 600; color: var(--purple-dark); }
+    .tracker-holder { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .badge-acceptance { background: #F3EEF9; color: var(--purple); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="LCE LOGO.png" alt="LCE">
+      <div class="dept-name">Civil &amp; Structural · Project Hub</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-name" id="userName">Loading...</div>
+      <div class="user-desig" id="userDesig"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-icon">🏠</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item" href="kanban.html">
+        <span class="nav-icon">📊</span><span>My Kanban</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="APP.logout()">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="dashboard.html" style="text-decoration:none;color:var(--text-muted);font-size:13px;">← Dashboard</a>
+        <span style="color:var(--border);">/</span>
+        <span class="topbar-title" id="topbarTitle">Project</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button id="addTaskBtn" class="btn btn-green btn-sm" onclick="openNewTaskModal()" style="display:none;">
+          + Add Task
+        </button>
+        <button id="editProjectBtn" class="btn btn-ghost btn-sm" onclick="openEditProjectModal()" style="display:none;">
+          ✏️ Edit
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Project header -->
+      <div class="project-detail-header" id="projectHeader">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div id="projectTitle" class="project-detail-title">Loading...</div>
+            <div id="projectDesc"  class="project-detail-desc"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;" id="projectBadges"></div>
+        </div>
+        <div class="project-detail-meta" id="projectMeta"></div>
+      </div>
+
+      <!-- Task stats -->
+      <div class="stats-grid" id="taskStats" style="margin-bottom:20px;"></div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="tabBar">
+        <button class="tab-btn active" onclick="switchTab('tasks',this)">📋 Tasks</button>
+        <button class="tab-btn" id="qcTabBtn" onclick="switchTab('qc',this)" style="display:none;">🔏 QC Sign-off</button>
+      </div>
+
+      <!-- ── Tasks Tab ── -->
+      <div id="tabTasks">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <div id="l1TrackInfo" style="display:none;font-size:12px;color:var(--purple);font-weight:500;">
+            👁 Tracking all tasks across team
+          </div>
+          <div style="display:flex;gap:8px;">
+            <select id="statusFilter" class="form-control" style="width:auto;font-size:13px;" onchange="renderTasks()">
+              <option value="">All Status</option>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Acceptance">Acceptance</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+        </div>
+        <div id="taskList" class="task-list"></div>
+      </div>
+
+      <!-- ── QC Sign-off Tab ── -->
+      <div id="tabQC" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <h3 style="font-size:16px;color:var(--purple-dark);">Drawing Sign-off Checklists</h3>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:3px;">Create QC checklists for drawings ready for client submission</p>
+          </div>
+          <button id="newChecklistBtn" class="btn btn-primary btn-sm" onclick="openNewChecklistModal()" style="display:none;">
+            + New Checklist
+          </button>
+        </div>
+        <div id="checklistList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Task Modal ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="taskModalTitle">Add Task</h3>
+      <button class="modal-close" onclick="closeTaskModal()">×</button>
+    </div>
+    <div id="taskModalAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label class="form-label">Task Title *</label>
+      <input type="text" id="tTitle" class="form-control" placeholder="e.g. Prepare RCC Column Design">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea id="tDesc" class="form-control" rows="2" placeholder="Details about this task..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority *</label>
+        <select id="tPriority" class="form-control">
+          <option value="High">🔴 High</option>
+          <option value="Medium" selected>🟡 Medium</option>
+          <option value="Low">🟢 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" id="tDueDate" class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assign To</label>
+      <select id="tAssignee" class="form-control">
+        <option value="">— Unassigned —</option>
+      </select>
+    </div>
+    <input type="hidden" id="editTaskId">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Project Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="editProjectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Project</h3>
+      <button class="modal-close" onclick="closeEditProjectModal()">×</button>
+    </div>
+    <div id="editProjAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label class="form-label">Project Title *</label>
+      <input type="text" id="epTitle" class="form-control">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea id="epDesc" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select id="epPriority" class="form-control">
+          <option value="High">🔴 High</option>
+          <option value="Medium">🟡 Medium</option>
+          <option value="Low">🟢 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="epStatus" class="form-control">
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="On Hold">On Hold</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" id="epDueDate" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assignee</label>
+        <select id="epAssignee" class="form-control">
+          <option value="">— Unassigned —</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditProjectModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditProject()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Task confirm ────────────────────────────────────── -->
+<div class="modal-overlay" id="deleteTaskModal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <h3>Delete Task</h3>
+      <button class="modal-close" onclick="closeDeleteTaskModal()">×</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:8px;">Delete "<strong id="deleteTaskName"></strong>"? This cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDeleteTaskModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteTask()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── New Checklist Modal ────────────────────────────────────── -->
+<div class="modal-overlay" id="checklistModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <h3>New QC Sign-off Checklist</h3>
+      <button class="modal-close" onclick="closeChecklistModal()">×</button>
+    </div>
+    <div id="clAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label class="form-label">Drawing / Document Title *</label>
+      <input type="text" id="clTitle" class="form-control" placeholder="e.g. Foundation Plan — Block A">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description / Notes</label>
+      <textarea id="clDesc" class="form-control" rows="2" placeholder="Optional notes about this sign-off..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reviewers who must sign *</label>
+      <div id="reviewerCheckboxes" style="max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;"></div>
+      <div class="form-hint">Select team members who need to QC-sign this drawing before HOD approval.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeChecklistModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveChecklist()">Create Checklist</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  let currentUser      = null;
+  let projectId        = null;
+  let project          = null;
+  let deleteTaskTarget = null;
+  let currentTab       = 'tasks';
+
+  function getProjectId() { return new URLSearchParams(window.location.search).get('id'); }
+
+  function init() {
+    currentUser = APP.requireAuth();
+    if (!currentUser) return;
+
+    projectId = getProjectId();
+    project   = APP.getProjectById(projectId);
+    if (!project) { window.location.href = 'dashboard.html'; return; }
+
+    document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent   = currentUser.name;
+    document.getElementById('userDesig').textContent  = currentUser.designation;
+    document.getElementById('topbarTitle').textContent = project.title;
+
+    if (APP.canCreateTasks(currentUser)) document.getElementById('addTaskBtn').style.display = 'flex';
+    if (APP.canCreateProjects(currentUser)) document.getElementById('editProjectBtn').style.display = 'flex';
+
+    // QC Sign-off tab: show for L, L0 (admin) and visible to all
+    if (APP.isAdmin(currentUser)) {
+      document.getElementById('qcTabBtn').style.display = 'inline-flex';
+      document.getElementById('newChecklistBtn').style.display = 'flex';
+    } else {
+      // Show tab to everyone so they can see their sign-off items
+      document.getElementById('qcTabBtn').style.display = 'inline-flex';
+    }
+
+    // L1 tracker visibility
+    if (currentUser.level === 'L1' || APP.isAdmin(currentUser)) {
+      document.getElementById('l1TrackInfo').style.display = 'block';
+    }
+
+    renderProjectHeader();
+    renderTaskStats();
+    renderTasks();
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────────
+  function switchTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tabTasks').style.display = tab === 'tasks' ? 'block' : 'none';
+    document.getElementById('tabQC').style.display    = tab === 'qc'    ? 'block' : 'none';
+    document.getElementById('addTaskBtn').style.display = (tab === 'tasks' && APP.canCreateTasks(currentUser)) ? 'flex' : 'none';
+    if (tab === 'qc') renderChecklists();
+  }
+
+  // ── Project Header ────────────────────────────────────────────────
+  function renderProjectHeader() {
+    const ph = document.getElementById('projectHeader');
+    ph.className = `project-detail-header priority-${project.priority}`;
+    document.getElementById('projectTitle').textContent = project.title;
+    document.getElementById('projectDesc').textContent  = project.description || '';
+
+    const overdue = project.dueDate && new Date(project.dueDate) < new Date() && project.status !== 'Completed';
+    const statusClass = (project.status || 'Not Started').replace(/\s+/g,'').toLowerCase();
+    document.getElementById('projectBadges').innerHTML = `
+      <span class="badge badge-${(project.priority||'medium').toLowerCase()}">${project.priority}</span>
+      <span class="badge badge-${statusClass}">${project.status || 'Not Started'}</span>
+      ${overdue ? '<span class="badge" style="background:#FDECEA;color:var(--danger);">Overdue</span>' : ''}
+    `;
+    document.getElementById('projectMeta').innerHTML = `
+      <div class="meta-item"><span class="meta-label">Created</span><span class="meta-value">${APP.formatDate(project.createdAt)}</span></div>
+      <div class="meta-item"><span class="meta-label">Due Date</span><span class="meta-value" style="${overdue?'color:var(--danger);font-weight:600;':''}">${APP.formatDate(project.dueDate)}</span></div>
+      <div class="meta-item"><span class="meta-label">Assignee</span><span class="meta-value">${APP.getUserName(project.assigneeId)}</span></div>
+      <div class="meta-item"><span class="meta-label">Created By</span><span class="meta-value">${APP.getUserName(project.createdBy)}</span></div>
+      <div class="meta-item"><span class="meta-label">Assigner</span><span class="meta-value">${APP.getUserName(project.assignerId)}</span></div>
+    `;
+  }
+
+  // ── Task Stats ────────────────────────────────────────────────────
+  function renderTaskStats() {
+    const tasks = APP.getProjectTasks(projectId, currentUser);
+    const todo  = tasks.filter(t => t.status === 'To Do').length;
+    const inp   = tasks.filter(t => t.status === 'In Progress').length;
+    const acc   = tasks.filter(t => t.status === 'Acceptance').length;
+    const done  = tasks.filter(t => t.status === 'Done').length;
+    const pct   = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+    document.getElementById('taskStats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-value">${tasks.length}</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card" style="border-left-color:#aaa;">
+        <div class="stat-value" style="color:#555;">${todo}</div>
+        <div class="stat-label">To Do</div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--info);">
+        <div class="stat-value" style="color:var(--info);">${inp}</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--purple-light);">
+        <div class="stat-value" style="color:var(--purple);">${acc}</div>
+        <div class="stat-label">Acceptance</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value" style="color:var(--success);">${done}</div>
+        <div class="stat-label">Done</div>
+      </div>
+      <div class="stat-card" style="border-left-color:var(--green);">
+        <div class="stat-value" style="color:var(--green-dark);font-size:22px;">${pct}%</div>
+        <div class="stat-label">Complete</div>
+      </div>
+    `;
+  }
+
+  // ── Task List ─────────────────────────────────────────────────────
+  function renderTasks() {
+    const filterStatus = document.getElementById('statusFilter').value;
+    let tasks = APP.getProjectTasks(projectId, currentUser);
+    if (filterStatus) tasks = tasks.filter(t => t.status === filterStatus);
+
+    const list      = document.getElementById('taskList');
+    const canDelete = APP.canCreateProjects(currentUser);
+    const canEdit   = APP.canCreateTasks(currentUser);
+    const isL1orAdmin = currentUser.level === 'L1' || APP.isAdmin(currentUser);
+
+    if (tasks.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <h3>${filterStatus ? 'No tasks with this status' : 'No tasks yet'}</h3>
+          <p>${canEdit ? 'Click "+ Add Task" to create the first task.' : 'No tasks assigned to you yet.'}</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = tasks.map(t => {
+      const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
+      const statusClass = t.status.replace(/\s+/g,'').toLowerCase();
+      const assigneeName = APP.getUserName(t.assigneeId);
+      return `
+        <div class="task-item priority-${t.priority}">
+          <div class="task-info">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="task-title">${APP.escapeHtml(t.title)}</span>
+              ${isL1orAdmin ? `
+                <span style="font-size:11px;background:var(--purple-pale);color:var(--purple);padding:2px 8px;border-radius:4px;font-weight:500;">
+                  📌 With: ${APP.escapeHtml(assigneeName)}
+                </span>` : ''}
+            </div>
+            ${t.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${APP.escapeHtml(t.description)}</div>` : ''}
+            <div class="task-meta">
+              <span class="badge badge-${statusClass}">${t.status}</span>
+              <span class="badge badge-${(t.priority||'medium').toLowerCase()}">${t.priority}</span>
+              ${!isL1orAdmin ? `<span>👤 ${APP.escapeHtml(assigneeName)}</span>` : ''}
+              ${t.dueDate ? `<span style="${overdue?'color:var(--danger);font-weight:600;':''}">📅 ${APP.formatDate(t.dueDate)}${overdue?' ⚠️':''}</span>` : ''}
+              <span style="color:var(--text-muted);">By: ${APP.getUserName(t.createdBy)}</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <select class="status-select" onchange="updateTaskStatus('${t.id}', this.value)">
+              <option value="To Do"       ${t.status==='To Do'?'selected':''}>To Do</option>
+              <option value="In Progress" ${t.status==='In Progress'?'selected':''}>In Progress</option>
+              <option value="Acceptance"  ${t.status==='Acceptance'?'selected':''}>Acceptance</option>
+              <option value="Done"        ${t.status==='Done'?'selected':''}>Done</option>
+            </select>
+            ${canEdit   ? `<button class="btn btn-ghost btn-sm" onclick="openEditTask('${t.id}')" title="Edit">✏️</button>` : ''}
+            ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="openDeleteTask('${t.id}','${APP.escapeHtml(t.title)}')" title="Delete">🗑️</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function updateTaskStatus(taskId, status) {
+    APP.updateTask(taskId, { status });
+    renderTaskStats();
+    renderTasks();
+  }
+
+  // ── Task Modal ────────────────────────────────────────────────────
+  function openNewTaskModal() {
+    document.getElementById('taskModalTitle').textContent = 'Add Task';
+    document.getElementById('tTitle').value = '';
+    document.getElementById('tDesc').value  = '';
+    document.getElementById('tPriority').value = 'Medium';
+    document.getElementById('tDueDate').value  = '';
+    document.getElementById('editTaskId').value = '';
+    populateTaskAssignee(null);
+    document.getElementById('taskModal').classList.add('open');
+  }
+
+  function openEditTask(taskId) {
+    const t = APP.getTaskById(taskId);
+    if (!t) return;
+    document.getElementById('taskModalTitle').textContent = 'Edit Task';
+    document.getElementById('tTitle').value    = t.title;
+    document.getElementById('tDesc').value     = t.description || '';
+    document.getElementById('tPriority').value = t.priority;
+    document.getElementById('tDueDate').value  = t.dueDate ? t.dueDate.split('T')[0] : '';
+    document.getElementById('editTaskId').value = taskId;
+    populateTaskAssignee(t.assigneeId);
+    document.getElementById('taskModal').classList.add('open');
+  }
+
+  function populateTaskAssignee(selectedId) {
+    const users = APP.getAssignableUsers(currentUser);
+    document.getElementById('tAssignee').innerHTML =
+      '<option value="">— Unassigned —</option>' +
+      users.map(u => `<option value="${u.id}" ${u.id === selectedId ? 'selected' : ''}>${APP.escapeHtml(u.name)} — ${APP.escapeHtml(u.designation)}</option>`).join('');
+  }
+
+  function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
+
+  function saveTask() {
+    const title    = document.getElementById('tTitle').value.trim();
+    const desc     = document.getElementById('tDesc').value.trim();
+    const priority = document.getElementById('tPriority').value;
+    const dueDate  = document.getElementById('tDueDate').value;
+    const assignee = document.getElementById('tAssignee').value;
+    const editId   = document.getElementById('editTaskId').value;
+    if (!title) return APP.showAlert('taskModalAlert', 'Task title is required.');
+    if (editId) {
+      APP.updateTask(editId, { title, description: desc, priority, dueDate: dueDate || null, assigneeId: assignee || null });
+    } else {
+      APP.createTask({ projectId, title, description: desc, priority, dueDate: dueDate || null, assigneeId: assignee || null }, currentUser.id);
+    }
+    closeTaskModal();
+    renderTaskStats();
+    renderTasks();
+  }
+
+  // ── Edit Project Modal ────────────────────────────────────────────
+  function openEditProjectModal() {
+    document.getElementById('epTitle').value    = project.title;
+    document.getElementById('epDesc').value     = project.description || '';
+    document.getElementById('epPriority').value = project.priority;
+    document.getElementById('epStatus').value   = project.status || 'Not Started';
+    document.getElementById('epDueDate').value  = project.dueDate ? project.dueDate.split('T')[0] : '';
+    const users = APP.getUsers().filter(u => u.id !== currentUser.id);
+    document.getElementById('epAssignee').innerHTML =
+      '<option value="">— Unassigned —</option>' +
+      users.map(u => `<option value="${u.id}" ${u.id === project.assigneeId ? 'selected' : ''}>${APP.escapeHtml(u.name)} — ${APP.escapeHtml(u.designation)}</option>`).join('');
+    document.getElementById('editProjectModal').classList.add('open');
+  }
+
+  function closeEditProjectModal() { document.getElementById('editProjectModal').classList.remove('open'); }
+
+  function saveEditProject() {
+    const title    = document.getElementById('epTitle').value.trim();
+    const desc     = document.getElementById('epDesc').value.trim();
+    const priority = document.getElementById('epPriority').value;
+    const status   = document.getElementById('epStatus').value;
+    const dueDate  = document.getElementById('epDueDate').value;
+    const assignee = document.getElementById('epAssignee').value;
+    if (!title) return APP.showAlert('editProjAlert', 'Project title is required.');
+    project = APP.updateProject(projectId, { title, description: desc, priority, status, dueDate, assigneeId: assignee || null });
+    document.getElementById('topbarTitle').textContent = project.title;
+    closeEditProjectModal();
+    renderProjectHeader();
+    renderTaskStats();
+    renderTasks();
+  }
+
+  // ── Delete Task ───────────────────────────────────────────────────
+  function openDeleteTask(id, name) {
+    deleteTaskTarget = id;
+    document.getElementById('deleteTaskName').textContent = name;
+    document.getElementById('deleteTaskModal').classList.add('open');
+  }
+  function closeDeleteTaskModal() {
+    deleteTaskTarget = null;
+    document.getElementById('deleteTaskModal').classList.remove('open');
+  }
+  function confirmDeleteTask() {
+    if (deleteTaskTarget) {
+      APP.deleteTask(deleteTaskTarget);
+      closeDeleteTaskModal();
+      renderTaskStats();
+      renderTasks();
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── QC SIGN-OFF / CHECKLISTS ───────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  function renderChecklists() {
+    const checklists = APP.getProjectChecklists(projectId);
+    const container  = document.getElementById('checklistList');
+
+    if (checklists.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔏</div>
+          <h3>No sign-off checklists yet</h3>
+          <p>${APP.isAdmin(currentUser) ? 'Create a checklist for drawings ready for QC review.' : 'No checklists have been created for this project yet.'}</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = checklists.map(cl => renderChecklist(cl)).join('');
+  }
+
+  function renderChecklist(cl) {
+    const allSigned = APP.checklistAllSigned(cl);
+    const myReviewer = cl.reviewers.find(r => r.userId === currentUser.id);
+    const canHodSign = APP.isAdmin(currentUser) && allSigned && !cl.hodSignOff.signed;
+    const canSendToClient = APP.isAdmin(currentUser) && cl.hodSignOff.signed && !cl.sentToClient;
+
+    const reviewersHtml = cl.reviewers.map(r => `
+      <div class="reviewer-row ${r.signed ? 'signed' : ''}">
+        <span style="font-size:18px;">${r.signed ? '✅' : '⬜'}</span>
+        <div style="flex:1;">
+          <div class="rv-name">${APP.escapeHtml(r.name)}</div>
+          <div class="rv-desig">${APP.escapeHtml(r.designation)}</div>
+        </div>
+        ${r.signed
+          ? `<div class="rv-date">Signed ${APP.formatDate(r.signedAt)}</div>`
+          : (r.userId === currentUser.id && !r.signed
+            ? `<button class="btn btn-green btn-sm" onclick="signChecklist('${cl.id}')">Sign</button>`
+            : '<span style="font-size:11px;color:var(--text-muted);">Pending</span>'
+          )
+        }
+      </div>`).join('');
+
+    return `
+      <div class="checklist-card ${cl.sentToClient ? 'sent' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div class="checklist-title">📄 ${APP.escapeHtml(cl.drawingTitle)}</div>
+            ${cl.description ? `<div class="checklist-desc">${APP.escapeHtml(cl.description)}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            ${APP.isAdmin(currentUser) && !cl.sentToClient ? `<button class="btn btn-danger btn-sm" onclick="deleteChecklist('${cl.id}')">🗑️</button>` : ''}
+          </div>
+        </div>
+
+        <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+          Reviewers (${cl.reviewers.filter(r=>r.signed).length}/${cl.reviewers.length} signed)
+        </div>
+        ${reviewersHtml}
+
+        <div class="hod-signoff">
+          <div style="font-size:12px;font-weight:600;color:var(--purple-dark);margin-bottom:6px;">HOD Final Sign-off</div>
+          ${cl.hodSignOff.signed
+            ? `<div style="color:var(--green-dark);font-size:13px;">✅ Signed by ${APP.getUserName(cl.hodSignOff.signedBy)} on ${APP.formatDate(cl.hodSignOff.signedAt)}</div>`
+            : (canHodSign
+              ? `<button class="btn btn-primary btn-sm" onclick="hodSign('${cl.id}')">✍️ Sign & Approve</button>
+                 <span style="font-size:11px;color:var(--green-dark);margin-left:8px;">All reviewers have signed</span>`
+              : `<span style="font-size:12px;color:var(--text-muted);">${allSigned ? 'Ready for HOD sign-off' : `Waiting for ${cl.reviewers.filter(r=>!r.signed).length} reviewer(s)`}</span>`
+            )
+          }
+        </div>
+
+        ${cl.sentToClient
+          ? `<div class="sent-banner">✈️ Drawing sent to client on ${APP.formatDate(cl.sentAt)}</div>`
+          : (canSendToClient
+            ? `<button class="btn btn-green btn-sm" style="margin-top:10px;" onclick="sendToClient('${cl.id}')">✈️ Mark as Sent to Client</button>`
+            : ''
+          )
+        }
+      </div>`;
+  }
+
+  function signChecklist(id) {
+    APP.signChecklist(id, currentUser.id);
+    renderChecklists();
+  }
+
+  function hodSign(id) {
+    APP.hodSignChecklist(id, currentUser.id);
+    renderChecklists();
+  }
+
+  function sendToClient(id) {
+    if (confirm('Mark this drawing as sent to client?')) {
+      APP.markSentToClient(id);
+      renderChecklists();
+    }
+  }
+
+  function deleteChecklist(id) {
+    if (confirm('Delete this sign-off checklist?')) {
+      APP.deleteChecklist(id);
+      renderChecklists();
+    }
+  }
+
+  // ── New Checklist Modal ───────────────────────────────────────────
+  function openNewChecklistModal() {
+    document.getElementById('clTitle').value = '';
+    document.getElementById('clDesc').value  = '';
+    const users = APP.getUsers().filter(u => u.id !== currentUser.id);
+    document.getElementById('reviewerCheckboxes').innerHTML =
+      users.length === 0
+        ? '<p style="color:var(--text-muted);font-size:12px;">No other users registered yet.</p>'
+        : users.map(u => `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.1s;" onmouseover="this.style.background='#f5f3fa'" onmouseout="this.style.background=''">
+            <input type="checkbox" value="${u.id}" data-name="${APP.escapeHtml(u.name)}" data-desig="${APP.escapeHtml(u.designation)}" style="width:16px;height:16px;accent-color:var(--purple);">
+            <div>
+              <div style="font-size:13px;font-weight:500;">${APP.escapeHtml(u.name)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${APP.escapeHtml(u.designation)}</div>
+            </div>
+          </label>`).join('');
+    document.getElementById('checklistModal').classList.add('open');
+  }
+
+  function closeChecklistModal() { document.getElementById('checklistModal').classList.remove('open'); }
+
+  function saveChecklist() {
+    const title = document.getElementById('clTitle').value.trim();
+    const desc  = document.getElementById('clDesc').value.trim();
+    if (!title) return APP.showAlert('clAlert', 'Drawing title is required.');
+
+    const checked = [...document.querySelectorAll('#reviewerCheckboxes input[type=checkbox]:checked')];
+    if (checked.length === 0) return APP.showAlert('clAlert', 'Select at least one reviewer.');
+
+    const reviewers = checked.map(cb => ({
+      userId: cb.value,
+      name: cb.dataset.name,
+      designation: cb.dataset.desig,
+      signed: false,
+      signedAt: null
+    }));
+
+    APP.createChecklist({ projectId, drawingTitle: title, description: desc, reviewers }, currentUser.id);
+    closeChecklistModal();
+    renderChecklists();
+  }
+
+  // Close modals on overlay click
+  ['taskModal','editProjectModal','deleteTaskModal','checklistModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+  });
+
+  // Refresh on page visibility
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { renderTaskStats(); renderTasks(); if (currentTab === 'qc') renderChecklists(); }
+  });
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | LCE Project Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="LCE LOGO.png" alt="LCE">
+      <div class="dept-name">Civil &amp; Structural · Project Hub</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-name" id="userName">Loading...</div>
+      <div class="user-desig" id="userDesig"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="dashboard.html">
+        <span class="nav-icon">🏠</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item" href="kanban.html">
+        <span class="nav-icon">📊</span><span>My Kanban</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="APP.logout()">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="topbar">
+      <span class="topbar-title" id="topbarTitle">Projects</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span id="userBadge" style="font-size:12px;color:var(--text-muted);"></span>
+        <button id="newProjectBtn" class="btn btn-green btn-sm" onclick="openNewProjectModal()" style="display:none;">
+          + New Project
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Stats row -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Projects section -->
+      <div class="page-header">
+        <div>
+          <h2 id="projectsHeading">All Projects</h2>
+          <p id="projectsSubheading"></p>
+        </div>
+      </div>
+
+      <div id="projectsGrid" class="projects-grid"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Project Modal -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">New Project</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <div id="modalAlert" class="alert alert-error"></div>
+
+    <div class="form-group">
+      <label class="form-label">Project Title *</label>
+      <input type="text" id="pTitle" class="form-control" placeholder="e.g. Foundation Design — Hedri Site" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea id="pDesc" class="form-control" rows="3" placeholder="Brief description of the project..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority *</label>
+        <select id="pPriority" class="form-control">
+          <option value="High">🔴 High</option>
+          <option value="Medium" selected>🟡 Medium</option>
+          <option value="Low">🟢 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date *</label>
+        <input type="date" id="pDueDate" class="form-control" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assignee (Lead)</label>
+      <select id="pAssignee" class="form-control">
+        <option value="">— Unassigned —</option>
+      </select>
+    </div>
+
+    <input type="hidden" id="editProjectId">
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h3>Delete Project</h3>
+      <button class="modal-close" onclick="closeDeleteModal()">×</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:8px;">
+      Are you sure you want to delete <strong id="deleteProjectName"></strong>?<br>
+      All tasks within this project will also be deleted.
+    </p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  let currentUser = null;
+  let deleteTargetId = null;
+
+  APP.seedAdmin();
+
+  function init() {
+    currentUser = APP.requireAuth();
+    if (!currentUser) return;
+
+    // Set sidebar user info
+    document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userDesig').textContent = currentUser.designation;
+    document.getElementById('userBadge').textContent = currentUser.designation;
+
+    // Show New Project button for admins
+    if (APP.canCreateProjects(currentUser)) {
+      document.getElementById('newProjectBtn').style.display = 'flex';
+    }
+
+    // Heading based on level
+    if (APP.isAdmin(currentUser)) {
+      document.getElementById('topbarTitle').textContent = 'All Projects';
+    } else if (currentUser.level === 'L1') {
+      document.getElementById('topbarTitle').textContent = 'Projects';
+    } else {
+      document.getElementById('topbarTitle').textContent = 'My Projects';
+      document.getElementById('projectsHeading').textContent = 'Projects Assigned to Me';
+    }
+
+    renderStats();
+    renderProjects();
+  }
+
+  function renderStats() {
+    const projects = APP.getVisibleProjects(currentUser);
+    const tasks    = APP.getMyTasks(currentUser.id);
+    const allTasks = APP.getTasks();
+
+    const completed = projects.filter(p => p.status === 'Completed').length;
+    const myTodo    = tasks.filter(t => t.status === 'To Do').length;
+    const myDone    = tasks.filter(t => t.status === 'Done').length;
+    const overdue   = projects.filter(p => p.dueDate && new Date(p.dueDate) < new Date() && p.status !== 'Completed').length;
+
+    const statsHtml = `
+      <div class="stat-card">
+        <div class="stat-value">${projects.length}</div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-value">${completed}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value">${tasks.length}</div>
+        <div class="stat-label">My Tasks</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-value">${overdue}</div>
+        <div class="stat-label">Overdue</div>
+      </div>
+    `;
+    document.getElementById('statsGrid').innerHTML = statsHtml;
+  }
+
+  function renderProjects() {
+    const projects = APP.getVisibleProjects(currentUser);
+    const grid = document.getElementById('projectsGrid');
+    const allTasks = APP.getTasks();
+    const isAdmin  = APP.canCreateProjects(currentUser);
+
+    if (projects.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1;">
+          <div class="empty-icon">📁</div>
+          <h3>No projects yet</h3>
+          <p>${isAdmin ? 'Create your first project using the button above.' : 'No projects have been assigned to you yet.'}</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = projects.map(p => {
+      const tasks    = allTasks.filter(t => t.projectId === p.id);
+      const done     = tasks.filter(t => t.status === 'Done').length;
+      const pct      = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+      const overdue  = p.dueDate && new Date(p.dueDate) < new Date() && p.status !== 'Completed';
+      const assignee = APP.getUserName(p.assigneeId);
+      const assigner = APP.getUserName(p.assignerId);
+      const statusClass = (p.status || 'Not Started').replace(/\s+/g,'').toLowerCase();
+
+      return `
+        <div class="project-card priority-${p.priority}" onclick="goToProject('${p.id}')">
+          <div class="project-card-header">
+            <div class="project-title">${APP.escapeHtml(p.title)}</div>
+            ${isAdmin ? `
+              <div class="card-actions" onclick="event.stopPropagation()">
+                <button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')" title="Edit">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${p.id}','${APP.escapeHtml(p.title)}')" title="Delete">🗑️</button>
+              </div>` : ''}
+          </div>
+          ${p.description ? `<div class="project-desc">${APP.escapeHtml(p.description)}</div>` : ''}
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+            <span class="badge badge-${(p.priority||'medium').toLowerCase()}">${p.priority}</span>
+            <span class="badge badge-${statusClass}">${p.status || 'Not Started'}</span>
+            ${overdue ? '<span class="badge" style="background:#fde8e8;color:#c0392b;">Overdue</span>' : ''}
+          </div>
+          <div class="project-meta">
+            <span>📅 Due: ${APP.formatDate(p.dueDate)}</span>
+            <span>👤 Assignee: ${assignee}</span>
+            <span>📋 Tasks: ${done}/${tasks.length}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--purple)'}"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:right;">${pct}% complete</div>
+        </div>`;
+    }).join('');
+  }
+
+  function goToProject(id) {
+    window.location.href = `project.html?id=${id}`;
+  }
+
+  // ─── Project Modal ────────────────────────────────────────────────
+  function openNewProjectModal() {
+    document.getElementById('modalTitle').textContent = 'New Project';
+    document.getElementById('pTitle').value = '';
+    document.getElementById('pDesc').value  = '';
+    document.getElementById('pPriority').value = 'Medium';
+    document.getElementById('pDueDate').value  = '';
+    document.getElementById('editProjectId').value = '';
+    populateAssigneeDropdown(null);
+    document.getElementById('projectModal').classList.add('open');
+  }
+
+  function openEditProject(id) {
+    const p = APP.getProjectById(id);
+    if (!p) return;
+    document.getElementById('modalTitle').textContent = 'Edit Project';
+    document.getElementById('pTitle').value    = p.title;
+    document.getElementById('pDesc').value     = p.description || '';
+    document.getElementById('pPriority').value = p.priority;
+    document.getElementById('pDueDate').value  = p.dueDate ? p.dueDate.split('T')[0] : '';
+    document.getElementById('editProjectId').value = id;
+    populateAssigneeDropdown(p.assigneeId);
+    document.getElementById('projectModal').classList.add('open');
+  }
+
+  function populateAssigneeDropdown(selectedId) {
+    const users = APP.getUsers().filter(u => u.id !== currentUser.id);
+    const sel   = document.getElementById('pAssignee');
+    sel.innerHTML = '<option value="">— Unassigned —</option>' +
+      users.map(u => `<option value="${u.id}" ${u.id === selectedId ? 'selected' : ''}>${APP.escapeHtml(u.name)} — ${APP.escapeHtml(u.designation)}</option>`).join('');
+  }
+
+  function closeModal() {
+    document.getElementById('projectModal').classList.remove('open');
+  }
+
+  function saveProject() {
+    const title    = document.getElementById('pTitle').value.trim();
+    const desc     = document.getElementById('pDesc').value.trim();
+    const priority = document.getElementById('pPriority').value;
+    const dueDate  = document.getElementById('pDueDate').value;
+    const assignee = document.getElementById('pAssignee').value;
+    const editId   = document.getElementById('editProjectId').value;
+
+    if (!title)   return APP.showAlert('modalAlert', 'Project title is required.');
+    if (!dueDate) return APP.showAlert('modalAlert', 'Due date is required.');
+
+    if (editId) {
+      APP.updateProject(editId, { title, description: desc, priority, dueDate, assigneeId: assignee || null });
+    } else {
+      APP.createProject({ title, description: desc, priority, dueDate, assigneeId: assignee || null }, currentUser.id);
+    }
+
+    closeModal();
+    renderStats();
+    renderProjects();
+  }
+
+  // ─── Delete Modal ─────────────────────────────────────────────────
+  function openDeleteModal(id, name) {
+    deleteTargetId = id;
+    document.getElementById('deleteProjectName').textContent = name;
+    document.getElementById('deleteModal').classList.add('open');
+  }
+
+  function closeDeleteModal() {
+    deleteTargetId = null;
+    document.getElementById('deleteModal').classList.remove('open');
+  }
+
+  function confirmDelete() {
+    if (deleteTargetId) {
+      APP.deleteProject(deleteTargetId);
+      closeDeleteModal();
+      renderStats();
+      renderProjects();
+    }
+  }
+
+  // Close modals on overlay click
+  document.getElementById('projectModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+  document.getElementById('deleteModal').addEventListener('click',  function(e) { if (e.target === this) closeDeleteModal(); });
+
+  // Refresh when returning from project detail (so % completion stays up to date)
+  window.addEventListener('pageshow', function() { renderStats(); renderProjects(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderStats(); renderProjects(); } });
+
+  init();
+</script>
+</body>
+</html>

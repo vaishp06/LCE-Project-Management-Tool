@@ -1,270 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Management Tool</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            padding: 12px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #764ba2;
-        }
-
-        .task-list {
-            list-style: none;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-
-        .task-item.completed {
-            opacity: 0.6;
-        }
-
-        .task-item.completed .task-text {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 15px;
-            cursor: pointer;
-        }
-
-        .task-text {
-            flex: 1;
-            color: #333;
-            font-size: 16px;
-        }
-
-        .delete-btn {
-            padding: 8px 12px;
-            background: #ff6b6b;
-            font-size: 14px;
-            margin-left: 10px;
-        }
-
-        .delete-btn:hover {
-            background: #ee5a52;
-        }
-
-        .empty-message {
-            text-align: center;
-            color: #999;
-            padding: 30px;
-            font-size: 16px;
-        }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
-        }
-
-        .stat {
-            flex: 1;
-            text-align: center;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #999;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LCE Project Hub | Lloyds Consulting & Engineering</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <h1>📋 Project Management Tool</h1>
-        
-        <div class="input-group">
-            <input 
-                type="text" 
-                id="taskInput" 
-                placeholder="Add a new task..."
-                onkeypress="if(event.key === 'Enter') addTask()"
-            >
-            <button onclick="addTask()">Add Task</button>
-        </div>
+<body class="landing-body">
 
-        <ul class="task-list" id="taskList">
-            <div class="empty-message">No tasks yet. Add one to get started! 🚀</div>
-        </ul>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Total Tasks</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number" id="completedTasks">0</div>
-                <div class="stat-label">Completed</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number" id="remainingTasks">0</div>
-                <div class="stat-label">Remaining</div>
-            </div>
-        </div>
+  <!-- Header -->
+  <header class="landing-header">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="LCE LOGO.png" alt="LCE Lloyds">
+      </a>
+      <nav class="header-nav">
+        <a href="login.html" class="nav-link">Login</a>
+        <a href="signup.html" class="btn btn-green">Create Account</a>
+      </nav>
     </div>
+  </header>
 
-    <script>
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="dept-badge">Civil &amp; Structural Department</div>
+        <h1 class="hero-title">
+          Project<br>Management<br>
+          <span class="accent-text">Hub</span>
+        </h1>
+        <p class="hero-subtitle">
+          A centralised platform for the LCE Civil &amp; Structural team to plan projects,
+          assign tasks, and track progress — from HOD to Drafting.
+        </p>
+        <div class="hero-actions">
+          <a href="login.html" class="btn-hero-primary">Login to Dashboard</a>
+          <a href="signup.html" class="btn-hero-secondary">Create Account</a>
+        </div>
+      </div>
 
-        function addTask() {
-            const taskInput = document.getElementById('taskInput');
-            const taskText = taskInput.value.trim();
+      <!-- Live Projects Panel -->
+      <div class="hero-visual">
+        <div class="live-panel">
+          <div class="live-panel-title">
+            <div class="live-dot"></div>
+            Live Projects
+          </div>
+          <div id="liveProjectsContainer">
+            <div class="live-empty">No projects yet.<br>Login to create your first project.</div>
+          </div>
+          <div id="liveStats" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);display:none;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);">
+              <span id="lsTotalProjects">0 projects</span>
+              <span id="lsTotalTasks">0 tasks</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            if (taskText === '') {
-                alert('Please enter a task!');
-                return;
-            }
+  <!-- Features -->
+  <section class="features">
+    <div class="features-inner">
+      <h2>Everything your team needs</h2>
+      <p class="features-sub">Built for the Civil &amp; Structural workflow — from HOD to Drafting team</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">📁</span>
+          <h3>Project Management</h3>
+          <p>HODs create and manage projects with priority, due dates, and assignees. Full lifecycle control.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">✅</span>
+          <h3>Task Delegation</h3>
+          <p>Managers break projects into tasks and assign them down the hierarchy — Deputy Managers, Designers, Drafting.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📊</span>
+          <h3>Personal Kanban</h3>
+          <p>Every team member gets a personal Kanban board showing their tasks in To Do, In Progress, and Done columns.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔐</span>
+          <h3>Role-Based Access</h3>
+          <p>Access is automatically determined by your designation — from Deputy General Manager to Junior Engineers.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🎯</span>
+          <h3>Priority Tracking</h3>
+          <p>Flag projects and tasks as High, Medium, or Low priority. Never lose sight of what matters most.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📅</span>
+          <h3>Overdue Alerts</h3>
+          <p>Overdue projects and tasks are visually highlighted so nothing slips through the cracks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            const task = {
-                id: Date.now(),
-                text: taskText,
-                completed: false
-            };
+  <!-- How it works -->
+  <section class="how-section">
+    <div class="how-inner">
+      <h2>How it works</h2>
+      <p class="how-sub">Simple, role-driven workflow for the entire department</p>
+      <div class="how-grid">
+        <div class="how-step">
+          <div class="how-num purple">1</div>
+          <h4>Create Account</h4>
+          <p>Sign up with your employee ID, company email, and designation.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num green">2</div>
+          <h4>HOD Creates Projects</h4>
+          <p>HODs and Advisors create projects with priority, due date, and team assignments.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num purple">3</div>
+          <h4>Managers Assign Tasks</h4>
+          <p>Managers open projects and create tasks for Deputy Managers, Designers, and Drafting teams.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num green">4</div>
+          <h4>Track on Kanban</h4>
+          <p>Everyone tracks their work on their personal Kanban board and updates task status.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            tasks.push(task);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            taskInput.value = '';
-            renderTasks();
-        }
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <p>© 2026 Lloyds Consulting &amp; Engineering, Pune &nbsp;·&nbsp; Civil &amp; Structural Department</p>
+    <p style="margin-top:6px;">Department email: <a href="mailto:lcecst@lloyds.in">lcecst@lloyds.in</a></p>
+  </footer>
 
-        function deleteTask(id) {
-            tasks = tasks.filter(task => task.id !== id);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            renderTasks();
-        }
+  <script src="app.js"></script>
+  <script>
+    // Seed admin on first load
+    APP.seedAdmin();
 
-        function toggleTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                renderTasks();
-            }
-        }
+    // If already logged in, go to dashboard
+    if (APP.getCurrentUser()) {
+      window.location.href = 'dashboard.html';
+    }
 
-        function renderTasks() {
-            const taskList = document.getElementById('taskList');
-            
-            if (tasks.length === 0) {
-                taskList.innerHTML = '<div class="empty-message">No tasks yet. Add one to get started! 🚀</div>';
-            } else {
-                taskList.innerHTML = tasks.map(task => `
-                    <li class="task-item ${task.completed ? 'completed' : ''}">
-                        <input 
-                            type="checkbox" 
-                            ${task.completed ? 'checked' : ''}
-                            onchange="toggleTask(${task.id})"
-                        >
-                        <span class="task-text">${escapeHtml(task.text)}</span>
-                        <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
-                    </li>
-                `).join('');
-            }
+    // ── Real-time live projects from localStorage ──────────────────
+    function loadLiveProjects() {
+      const projects = APP.getProjects();
+      const tasks    = APP.getTasks();
+      const container = document.getElementById('liveProjectsContainer');
+      const statsEl   = document.getElementById('liveStats');
 
-            updateStats();
-        }
+      if (projects.length === 0) {
+        container.innerHTML = '<div class="live-empty">No projects yet.<br>Login to create your first project.</div>';
+        return;
+      }
 
-        function updateStats() {
-            const total = tasks.length;
-            const completed = tasks.filter(t => t.completed).length;
-            const remaining = total - completed;
+      // Show stats
+      statsEl.style.display = 'block';
+      document.getElementById('lsTotalProjects').textContent = projects.length + ' project' + (projects.length !== 1 ? 's' : '');
+      document.getElementById('lsTotalTasks').textContent    = tasks.length + ' task' + (tasks.length !== 1 ? 's' : '');
 
-            document.getElementById('totalTasks').textContent = total;
-            document.getElementById('completedTasks').textContent = completed;
-            document.getElementById('remainingTasks').textContent = remaining;
-        }
+      // Show up to 4 most recent active projects
+      const recent = projects
+        .filter(p => p.status !== 'Completed')
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 4);
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+      if (recent.length === 0) {
+        // All completed — show latest 4
+        const all = [...projects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
+        container.innerHTML = renderLiveCards(all, tasks);
+      } else {
+        container.innerHTML = renderLiveCards(recent, tasks);
+      }
+    }
 
-        // Load tasks on page load
-        renderTasks();
-    </script>
+    function renderLiveCards(projects, allTasks) {
+      return projects.map(p => {
+        const ptasks = allTasks.filter(t => t.projectId === p.id);
+        const done   = ptasks.filter(t => t.status === 'Done').length;
+        const pct    = ptasks.length ? Math.round((done / ptasks.length) * 100) : 0;
+        const fillColor = pct === 100 ? '#A5D6A7' : (p.priority === 'High' ? '#EF9A9A' : p.priority === 'Medium' ? '#FFE082' : '#A5D6A7');
+        const overdue = p.dueDate && new Date(p.dueDate) < new Date() && p.status !== 'Completed';
+        return `
+          <div class="live-card prio-${p.priority}">
+            <div class="lc-name">${escapeHtml(p.title)}</div>
+            <div class="lc-bar"><div class="lc-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+            <div class="lc-meta">
+              ${pct}% done &nbsp;·&nbsp; ${ptasks.length} task${ptasks.length !== 1 ? 's' : ''}
+              ${overdue ? ' &nbsp;·&nbsp; <span style="color:#EF9A9A;">Overdue</span>' : ''}
+              ${p.dueDate ? ' &nbsp;·&nbsp; Due ' + formatShortDate(p.dueDate) : ''}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function formatShortDate(d) {
+      return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    }
+
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    // Load on page open
+    loadLiveProjects();
+
+    // Poll every 5 seconds for live updates (in case another tab adds a project)
+    setInterval(loadLiveProjects, 5000);
+  </script>
 </body>
 </html>

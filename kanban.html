@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Kanban | LCE Project Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Extra column for Acceptance */
+    .kanban-col.col-acceptance .kanban-col-header { border-color: var(--purple-light); }
+    .col-count.acceptance { background: rgba(102,51,170,0.15); color: var(--purple); }
+    .kanban-creator-badge {
+      font-size: 9px; background: #FFF3E0; color: var(--warning);
+      padding: 1px 5px; border-radius: 4px; font-weight: 600;
+      display: inline-block; margin-left: 4px; vertical-align: middle;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="LCE LOGO.png" alt="LCE">
+      <div class="dept-name">Civil &amp; Structural · Project Hub</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-name" id="userName">Loading...</div>
+      <div class="user-desig" id="userDesig"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-icon">🏠</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item active" href="kanban.html">
+        <span class="nav-icon">📊</span><span>My Kanban</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="APP.logout()">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="topbar">
+      <span class="topbar-title">My Kanban Board</span>
+      <span id="userBadge" style="font-size:12px;color:var(--text-muted);"></span>
+    </div>
+
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2>Personal Kanban Board</h2>
+          <p id="taskCountLine" style="color:var(--text-muted);font-size:13px;margin-top:3px;"></p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:12px;color:var(--text-muted);">Project:</label>
+          <select id="projectFilter" class="form-control" style="width:auto;font-size:13px;" onchange="renderBoard()">
+            <option value="">All Projects</option>
+          </select>
+          <label style="font-size:12px;color:var(--text-muted);margin-left:8px;">
+            <input type="checkbox" id="showCreated" onchange="renderBoard()" style="margin-right:4px;">
+            Show tasks I created for others
+          </label>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--text-muted);">
+          <span style="display:inline-block;width:10px;height:10px;background:var(--purple);border-radius:2px;margin-right:4px;"></span>
+          Assigned to me
+        </span>
+        <span style="font-size:12px;color:var(--text-muted);">
+          <span class="kanban-creator-badge">Created</span>
+          Tasks I created (assigned to others)
+        </span>
+      </div>
+
+      <!-- Kanban Board -->
+      <div class="kanban-board" id="kanbanBoard">
+
+        <!-- To Do -->
+        <div class="kanban-col col-todo" id="col-todo" data-status="To Do"
+             ondragover="onDragOver(event)" ondrop="onDrop(event,'To Do')" ondragleave="onDragLeave(event)">
+          <div class="kanban-col-header">
+            <span class="col-title">📋 To Do</span>
+            <span class="col-count" id="count-todo">0</span>
+          </div>
+          <div class="kanban-drop-zone" id="zone-todo"></div>
+        </div>
+
+        <!-- In Progress -->
+        <div class="kanban-col col-inprogress" id="col-inprogress" data-status="In Progress"
+             ondragover="onDragOver(event)" ondrop="onDrop(event,'In Progress')" ondragleave="onDragLeave(event)">
+          <div class="kanban-col-header">
+            <span class="col-title">⚙️ In Progress</span>
+            <span class="col-count" id="count-inprogress">0</span>
+          </div>
+          <div class="kanban-drop-zone" id="zone-inprogress"></div>
+        </div>
+
+        <!-- Acceptance -->
+        <div class="kanban-col col-acceptance" id="col-acceptance" data-status="Acceptance"
+             ondragover="onDragOver(event)" ondrop="onDrop(event,'Acceptance')" ondragleave="onDragLeave(event)">
+          <div class="kanban-col-header">
+            <span class="col-title">🔍 Acceptance</span>
+            <span class="col-count acceptance" id="count-acceptance">0</span>
+          </div>
+          <div class="kanban-drop-zone" id="zone-acceptance"></div>
+        </div>
+
+        <!-- Done -->
+        <div class="kanban-col col-done" id="col-done" data-status="Done"
+             ondragover="onDragOver(event)" ondrop="onDrop(event,'Done')" ondragleave="onDragLeave(event)">
+          <div class="kanban-col-header">
+            <span class="col-title">✅ Done</span>
+            <span class="col-count" id="count-done">0</span>
+          </div>
+          <div class="kanban-drop-zone" id="zone-done"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  let currentUser = null;
+  let dragTaskId  = null;
+
+  function init() {
+    currentUser = APP.requireAuth();
+    if (!currentUser) return;
+
+    document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent   = currentUser.name;
+    document.getElementById('userDesig').textContent  = currentUser.designation;
+    document.getElementById('userBadge').textContent  = currentUser.designation;
+
+    populateProjectFilter();
+    renderBoard();
+  }
+
+  function populateProjectFilter() {
+    const myTasks    = APP.getMyTasks(currentUser.id);
+    const projectIds = [...new Set(myTasks.map(t => t.projectId))];
+    const projects   = projectIds.map(id => APP.getProjectById(id)).filter(Boolean);
+    const sel = document.getElementById('projectFilter');
+    sel.innerHTML = '<option value="">All Projects</option>' +
+      projects.map(p => `<option value="${p.id}">${APP.escapeHtml(p.title)}</option>`).join('');
+  }
+
+  function renderBoard() {
+    const filterProject = document.getElementById('projectFilter').value;
+    const showCreated   = document.getElementById('showCreated').checked;
+
+    // Tasks assigned to me
+    const assigned = APP.getTasks().filter(t => t.assigneeId === currentUser.id);
+    // Tasks created by me for others (not assigned to me)
+    const created  = showCreated
+      ? APP.getTasks().filter(t => t.createdBy === currentUser.id && t.assigneeId !== currentUser.id)
+      : [];
+
+    let tasks = [...assigned, ...created];
+    if (filterProject) tasks = tasks.filter(t => t.projectId === filterProject);
+
+    const todo       = tasks.filter(t => t.status === 'To Do');
+    const inp        = tasks.filter(t => t.status === 'In Progress');
+    const acceptance = tasks.filter(t => t.status === 'Acceptance');
+    const done       = tasks.filter(t => t.status === 'Done');
+
+    document.getElementById('count-todo').textContent       = todo.length;
+    document.getElementById('count-inprogress').textContent = inp.length;
+    document.getElementById('count-acceptance').textContent = acceptance.length;
+    document.getElementById('count-done').textContent       = done.length;
+    document.getElementById('taskCountLine').textContent    =
+      `${tasks.length} task${tasks.length !== 1 ? 's' : ''} · ${assigned.length} assigned to me · ${done.length} done`;
+
+    document.getElementById('zone-todo').innerHTML       = renderCards(todo);
+    document.getElementById('zone-inprogress').innerHTML = renderCards(inp);
+    document.getElementById('zone-acceptance').innerHTML = renderCards(acceptance);
+    document.getElementById('zone-done').innerHTML       = renderCards(done);
+  }
+
+  function renderCards(tasks) {
+    if (tasks.length === 0) {
+      return `<div style="text-align:center;padding:20px 12px;color:var(--text-muted);font-size:12px;">Drop tasks here</div>`;
+    }
+    return tasks.map(t => {
+      const project = APP.getProjectById(t.projectId);
+      const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
+      const isCreatedByMe = t.createdBy === currentUser.id && t.assigneeId !== currentUser.id;
+      const assigneeName  = t.assigneeId ? APP.getUserName(t.assigneeId) : '—';
+      return `
+        <div class="kanban-card priority-${t.priority}"
+             draggable="true" data-task-id="${t.id}"
+             ondragstart="onDragStart(event,'${t.id}')"
+             ondragend="onDragEnd(event)">
+          <div class="kanban-card-title">
+            ${APP.escapeHtml(t.title)}
+            ${isCreatedByMe ? '<span class="kanban-creator-badge">Created</span>' : ''}
+          </div>
+          ${t.description ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${APP.escapeHtml(t.description.substring(0, 80))}${t.description.length > 80 ? '...' : ''}</div>` : ''}
+          <div class="kanban-card-meta">
+            <span class="badge badge-${(t.priority||'medium').toLowerCase()}" style="font-size:10px;">${t.priority}</span>
+            ${isCreatedByMe ? `<span style="font-size:10px;color:var(--text-muted);">→ ${APP.escapeHtml(assigneeName)}</span>` : ''}
+            ${t.dueDate ? `<span style="${overdue?'color:var(--danger);font-weight:600;':''}font-size:10px;">📅 ${APP.formatDate(t.dueDate)}${overdue?' ⚠️':''}</span>` : ''}
+          </div>
+          ${project ? `<div class="kanban-card-project">📁 ${APP.escapeHtml(project.title)}</div>` : ''}
+          <div style="margin-top:8px;display:flex;gap:3px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','To Do')">To Do</button>
+            <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','In Progress')">In Prog.</button>
+            <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;color:var(--purple);border-color:var(--purple-light);" onclick="quickMove('${t.id}','Acceptance')">Acceptance</button>
+            <button class="btn btn-success btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','Done')">Done</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function quickMove(taskId, status) {
+    APP.updateTask(taskId, { status });
+    renderBoard();
+  }
+
+  // ── Drag & Drop ───────────────────────────────────────────────────
+  function onDragStart(e, taskId) {
+    dragTaskId = taskId;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+  function onDragEnd(e) {
+    e.target.classList.remove('dragging');
+    document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+  }
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+    e.currentTarget.classList.add('drag-over');
+  }
+  function onDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+  }
+  function onDrop(e, status) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    if (dragTaskId) {
+      APP.updateTask(dragTaskId, { status });
+      dragTaskId = null;
+      renderBoard();
+    }
+  }
+
+  // Refresh when tab becomes active
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderBoard(); });
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | LCE Project Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-logo">
+    <img src="LCE LOGO.png" alt="LCE Lloyds">
+    <div class="dept-name">Civil &amp; Structural Department · Project Hub</div>
+  </div>
+
+  <div class="auth-card">
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Enter your company email and 4-digit passcode to continue.</p>
+
+    <div id="alertBox" class="alert alert-error"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+
+      <div class="form-group">
+        <label class="form-label">Company Email</label>
+        <input type="email" id="email" class="form-control" placeholder="yourname@lloyds.in" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:12px;">4-Digit Passcode</label>
+        <div class="pin-group">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" id="p0" onkeyup="pinNav(event,0)" onkeydown="pinBack(event,0)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" id="p1" onkeyup="pinNav(event,1)" onkeydown="pinBack(event,1)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" id="p2" onkeyup="pinNav(event,2)" onkeydown="pinBack(event,2)">
+          <input type="password" class="pin-input" maxlength="1" inputmode="numeric" id="p3" onkeyup="pinNav(event,3)" onkeydown="pinBack(event,3)">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:12px;">
+        Login
+      </button>
+    </form>
+
+    <div class="auth-footer" style="margin-top:14px;">
+      Don't have an account? <a href="signup.html">Create one here</a>
+      &nbsp;·&nbsp; <a href="index.html">← Back to home</a>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    APP.seedAdmin();
+    if (APP.getCurrentUser()) window.location.href = 'dashboard.html';
+
+    function pinNav(e, idx) {
+      const ids = ['p0','p1','p2','p3'];
+      const v = e.target.value;
+      if (!/^\d$/.test(v)) { e.target.value = ''; return; }
+      if (idx < 3) document.getElementById(ids[idx + 1]).focus();
+      // No auto-submit — user must click Login
+    }
+
+    function pinBack(e, idx) {
+      const ids = ['p0','p1','p2','p3'];
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+        document.getElementById(ids[idx - 1]).focus();
+      }
+    }
+
+    function getPin() { return ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join(''); }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const pin   = getPin();
+
+      if (!email.endsWith('@lloyds.in')) {
+        return APP.showAlert('alertBox', 'Please enter your company email ending in @lloyds.in');
+      }
+      if (pin.length !== 4) {
+        return APP.showAlert('alertBox', 'Please enter your 4-digit passcode.');
+      }
+
+      const user = APP.findUserByEmail(email);
+      if (!user) {
+        return APP.showAlert('alertBox', 'No account found with this email. Please sign up first.');
+      }
+      if (user.passcode !== pin) {
+        return APP.showAlert('alertBox', 'Incorrect passcode. Please try again.');
+      }
+
+      APP.setCurrentUser(user);
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>
