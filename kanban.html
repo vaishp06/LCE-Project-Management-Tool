@@ -191,25 +191,41 @@
   }
 
   function populateProjectFilter() {
-    const myTasks    = APP.getMyTasks(currentUser.id);
-    const projectIds = [...new Set(myTasks.map(t => t.projectId))];
-    const projects   = projectIds.map(id => APP.getProjectById(id)).filter(Boolean);
+    // L/L0 see ALL projects for monitoring; others see only projects their tasks belong to
+    let projects;
+    if (APP.isAdmin(currentUser)) {
+      projects = APP.getProjects();
+    } else {
+      const myTasks    = APP.getMyTasks(currentUser.id);
+      const projectIds = [...new Set(myTasks.map(t => t.projectId))];
+      projects = projectIds.map(id => APP.getProjectById(id)).filter(Boolean);
+    }
     const sel = document.getElementById('projectFilter');
     sel.innerHTML = '<option value="">All Projects</option>' +
-      projects.map(p => `<option value="${p.id}">${APP.escapeHtml(p.title)}</option>`).join('');
+      projects.map(p => {
+        const parent = p.parentProjectId ? APP.getProjectById(p.parentProjectId) : null;
+        const label  = parent ? `${APP.escapeHtml(parent.title)} › ${APP.escapeHtml(p.title)}` : APP.escapeHtml(p.title);
+        return `<option value="${p.id}">${label}</option>`;
+      }).join('');
   }
 
   function renderBoard() {
     const filterProject = document.getElementById('projectFilter').value;
     const showCreated   = document.getElementById('showCreated').checked;
 
-    const assigned = APP.getTasks().filter(t => APP.isTaskAssignedTo(t, currentUser.id));
-    const created  = showCreated
-      ? APP.getTasks().filter(t => t.createdBy === currentUser.id && !APP.isTaskAssignedTo(t, currentUser.id))
-      : [];
+    // Collect tasks for the board — assigned to me + (optionally) created by me
+    const allAssigned = APP.getTasks().filter(t => APP.isTaskAssignedTo(t, currentUser.id));
+    const allCreated  = APP.getTasks().filter(t => t.createdBy === currentUser.id && !APP.isTaskAssignedTo(t, currentUser.id));
 
-    let tasks = [...assigned, ...created];
-    if (filterProject) tasks = tasks.filter(t => t.projectId === filterProject);
+    let tasks;
+    if (APP.isAdmin(currentUser) && filterProject) {
+      // L/L0 viewing a specific project: show ALL tasks in that project for full oversight
+      tasks = APP.getTasks().filter(t => t.projectId === filterProject);
+    } else {
+      const created = showCreated ? allCreated : [];
+      tasks = [...allAssigned, ...created];
+      if (filterProject) tasks = tasks.filter(t => t.projectId === filterProject);
+    }
 
     const todo       = tasks.filter(t => t.status === 'To Do');
     const inp        = tasks.filter(t => t.status === 'In Progress');
@@ -221,7 +237,7 @@
     document.getElementById('count-acceptance').textContent = acceptance.length;
     document.getElementById('count-done').textContent       = done.length;
     document.getElementById('taskCountLine').textContent    =
-      `${tasks.length} task${tasks.length !== 1 ? 's' : ''} · ${assigned.length} assigned to me · ${done.length} done`;
+      `${tasks.length} task${tasks.length !== 1 ? 's' : ''} · ${allAssigned.length} assigned to me · ${done.length} done`;
 
     document.getElementById('zone-todo').innerHTML       = renderCards(todo);
     document.getElementById('zone-inprogress').innerHTML = renderCards(inp);
@@ -234,11 +250,16 @@
       return `<div style="text-align:center;padding:20px 12px;color:var(--text-muted);font-size:12px;">Drop tasks here</div>`;
     }
     return tasks.map(t => {
-      const project     = APP.getProjectById(t.projectId);
+      const proj        = APP.getProjectById(t.projectId);
+      const parentProj  = proj && proj.parentProjectId ? APP.getProjectById(proj.parentProjectId) : null;
       const overdue     = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
       const isCreatedByMe = t.createdBy === currentUser.id && !APP.isTaskAssignedTo(t, currentUser.id);
       const assigneeNames = APP.getTaskAssigneeNames(t);
       const isConcTask  = t.isConcurrenceTask;
+      // Build project label: "ParentProject › Subproject" or just "Project"
+      const projLabel = parentProj
+        ? `${APP.escapeHtml(parentProj.title)} › ${APP.escapeHtml(proj.title)}`
+        : (proj ? APP.escapeHtml(proj.title) : '');
       return `
         <div class="kanban-card priority-${t.priority}"
              draggable="true" data-task-id="${t.id}"
@@ -258,7 +279,7 @@
           </div>
           ${t.pdfData ? '<span class="card-pdf-chip">📄 PDF</span>' : ''}
           ${t.completionData ? `<span class="card-completion-chip">${t.completionData.type === 'civil' ? 'RCC' : 'Tonnage'}</span>` : ''}
-          ${project ? `<div class="kanban-card-project">📁 ${APP.escapeHtml(project.title)}</div>` : ''}
+          ${projLabel ? `<div class="kanban-card-project">📁 ${projLabel}</div>` : ''}
           <div style="margin-top:8px;display:flex;gap:3px;flex-wrap:wrap;" onclick="event.stopPropagation()">
             <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','To Do')">To Do</button>
             <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','In Progress')">In Prog.</button>

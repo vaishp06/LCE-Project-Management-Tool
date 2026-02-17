@@ -50,6 +50,7 @@ const APP = {
   canCreateSubprojects:  function (u) { return u && (u.level === 'L1' || this.isAdmin(u)); },
   canCreateTasks:        function (u) { return u && (!['L4', 'T2'].includes(u.level) || this.isAdmin(u)); },
   canCreateConcurrence:  function (u) { return u && (u.level === 'L1' || this.isAdmin(u)); },
+  canCreateSubtasks:     function (u) { return u && (['L', 'L0', 'L1', 'L2'].includes(u.level)); },
 
   // ─── Multi-assignee helpers ──────────────────────────────────────
   getTaskAssigneeIds: function (task) {
@@ -150,6 +151,7 @@ const APP = {
       priority:        data.priority || 'Medium',
       status:          'Not Started',
       dueDate:         data.dueDate || null,
+      scopeLink:       data.scopeLink || null,
       assignerId:      creatorId,
       assigneeIds:     assigneeIds,
       assigneeId:      assigneeIds[0] || null,   // backward compat
@@ -236,6 +238,44 @@ const APP = {
 
   deleteTask: function (id) { this.saveTasks(this.getTasks().filter(t => t.id !== id)); },
 
+  // ─── Subtasks (embedded inside a parent task) ────────────────────
+  addSubtask: function (taskId, data) {
+    const tasks = this.getTasks();
+    const i = tasks.findIndex(t => t.id === taskId);
+    if (i === -1) return null;
+    if (!tasks[i].subtasks) tasks[i].subtasks = [];
+    const subtask = {
+      id:         this.generateId(),
+      title:      data.title.trim(),
+      assigneeId: data.assigneeId || null,
+      status:     'To Do',
+      dueDate:    data.dueDate || null,
+      createdAt:  new Date().toISOString()
+    };
+    tasks[i].subtasks.push(subtask);
+    this.saveTasks(tasks);
+    return subtask;
+  },
+
+  updateSubtask: function (taskId, subtaskId, data) {
+    const tasks = this.getTasks();
+    const i = tasks.findIndex(t => t.id === taskId);
+    if (i === -1) return;
+    if (!tasks[i].subtasks) return;
+    const si = tasks[i].subtasks.findIndex(s => s.id === subtaskId);
+    if (si === -1) return;
+    tasks[i].subtasks[si] = { ...tasks[i].subtasks[si], ...data };
+    this.saveTasks(tasks);
+  },
+
+  deleteSubtask: function (taskId, subtaskId) {
+    const tasks = this.getTasks();
+    const i = tasks.findIndex(t => t.id === taskId);
+    if (i === -1) return;
+    tasks[i].subtasks = (tasks[i].subtasks || []).filter(s => s.id !== subtaskId);
+    this.saveTasks(tasks);
+  },
+
   getProjectTasks: function (projectId, user) {
     const all = this.getTasks().filter(t => t.projectId === projectId);
     if (!user || this.isAdmin(user) || user.level === 'L1') return all;
@@ -312,21 +352,26 @@ const APP = {
   createConcurrence: function (data, creatorId) {
     const list = this.getConcurrences();
     const cl = {
-      id:           this.generateId(),
-      projectId:    data.projectId,
-      drawingTitle: data.drawingTitle.trim(),
-      description:  (data.description || '').trim(),
-      reviewers:    data.reviewers || [],
-      hodSignOff:   { signed: false, signedBy: null, signedAt: null },
-      sentToClient: false,
-      sentAt:       null,
-      createdBy:    creatorId,
-      createdAt:    new Date().toISOString()
+      id:            this.generateId(),
+      projectId:     data.projectId,
+      drawingTitle:  data.drawingTitle.trim(),
+      description:   (data.description || '').trim(),
+      reviewers:     data.reviewers || [],
+      hodSignOff:    { signed: false, signedBy: null, signedAt: null },
+      sentToClient:  false,
+      sentAt:        null,
+      linkedTaskId:  data.linkedTaskId  || null,
+      linkedPdfData: data.linkedPdfData || null,
+      linkedPdfName: data.linkedPdfName || null,
+      createdBy:     creatorId,
+      createdAt:     new Date().toISOString()
     };
     list.push(cl);
     this.saveConcurrences(list);
 
-    // Auto-create a "Concurrence Sign-off" task for every reviewer
+    // Auto-create a "Concurrence Sign-off" task for every reviewer.
+    // If the concurrence is linked to a task that has a PDF, attach that PDF to the sign-off tasks
+    // so reviewers can see the drawing directly from their board.
     data.reviewers.forEach(r => {
       this.createTask({
         projectId:         data.projectId,
@@ -337,7 +382,9 @@ const APP = {
         assigneeIds:       [r.userId],
         assigneeId:        r.userId,
         concurrenceId:     cl.id,
-        isConcurrenceTask: true
+        isConcurrenceTask: true,
+        pdfData:           cl.linkedPdfData || null,
+        pdfName:           cl.linkedPdfName || null
       }, creatorId);
     });
     return cl;

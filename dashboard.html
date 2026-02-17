@@ -104,6 +104,11 @@
         <option value="">— Unassigned —</option>
       </select>
     </div>
+    <div class="form-group">
+      <label class="form-label">Scope / Reference Link</label>
+      <input type="url" id="pScopeLink" class="form-control" placeholder="https://... (scope document, SharePoint, Drive link)">
+      <div class="form-hint">Optional. Paste a link to the scope document, client brief, or folder.</div>
+    </div>
 
     <input type="hidden" id="editProjectId">
 
@@ -245,6 +250,7 @@
             <span>👤 Assignee: ${assignee}</span>
             <span>📋 Tasks: ${done}/${tasks.length}</span>
           </div>
+          ${p.scopeLink ? `<div style="margin-top:6px;"><a href="${APP.escapeHtml(p.scopeLink)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);text-decoration:underline;">🔗 View Scope / Reference</a></div>` : ''}
           <div class="progress-bar">
             <div class="progress-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--purple)'}"></div>
           </div>
@@ -264,6 +270,7 @@
     document.getElementById('pDesc').value  = '';
     document.getElementById('pPriority').value = 'Medium';
     document.getElementById('pDueDate').value  = '';
+    document.getElementById('pScopeLink').value = '';
     document.getElementById('editProjectId').value = '';
     populateAssigneeDropdown(null);
     document.getElementById('projectModal').classList.add('open');
@@ -277,6 +284,7 @@
     document.getElementById('pDesc').value     = p.description || '';
     document.getElementById('pPriority').value = p.priority;
     document.getElementById('pDueDate').value  = p.dueDate ? p.dueDate.split('T')[0] : '';
+    document.getElementById('pScopeLink').value = p.scopeLink || '';
     document.getElementById('editProjectId').value = id;
     populateAssigneeDropdown(p.assigneeId);
     document.getElementById('projectModal').classList.add('open');
@@ -294,20 +302,21 @@
   }
 
   function saveProject() {
-    const title    = document.getElementById('pTitle').value.trim();
-    const desc     = document.getElementById('pDesc').value.trim();
-    const priority = document.getElementById('pPriority').value;
-    const dueDate  = document.getElementById('pDueDate').value;
-    const assignee = document.getElementById('pAssignee').value;
-    const editId   = document.getElementById('editProjectId').value;
+    const title     = document.getElementById('pTitle').value.trim();
+    const desc      = document.getElementById('pDesc').value.trim();
+    const priority  = document.getElementById('pPriority').value;
+    const dueDate   = document.getElementById('pDueDate').value;
+    const assignee  = document.getElementById('pAssignee').value;
+    const scopeLink = document.getElementById('pScopeLink').value.trim() || null;
+    const editId    = document.getElementById('editProjectId').value;
 
     if (!title)   return APP.showAlert('modalAlert', 'Project title is required.');
     if (!dueDate) return APP.showAlert('modalAlert', 'Due date is required.');
 
     if (editId) {
-      APP.updateProject(editId, { title, description: desc, priority, dueDate, assigneeId: assignee || null });
+      APP.updateProject(editId, { title, description: desc, priority, dueDate, assigneeId: assignee || null, scopeLink });
     } else {
-      APP.createProject({ title, description: desc, priority, dueDate, assigneeId: assignee || null }, currentUser.id);
+      APP.createProject({ title, description: desc, priority, dueDate, assigneeId: assignee || null, scopeLink }, currentUser.id);
     }
 
     closeModal();

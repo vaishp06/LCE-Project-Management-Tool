@@ -200,6 +200,14 @@
       </div>
       <div class="assignee-check-list" id="tAssigneeList"></div>
     </div>
+    <!-- Create Concurrence option: shown to L1 / admin only when creating a new task -->
+    <div id="tConcurrenceRow" class="form-group" style="display:none;margin-top:4px;padding:10px;background:var(--purple-pale);border-radius:var(--radius);border:1px solid var(--purple-light);">
+      <label style="font-size:12px;color:var(--purple-dark);cursor:pointer;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="tCreateConcurrence" style="width:15px;height:15px;accent-color:var(--purple);">
+        <span>🔏 Automatically create a Concurrence sign-off for this task after saving</span>
+      </label>
+      <div class="form-hint" style="margin-top:4px;">Concurrence will be pre-filled with this task's title and assignees as reviewers.</div>
+    </div>
     <input type="hidden" id="editTaskId">
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeTaskModal()">Cancel</button>
@@ -246,6 +254,22 @@
         <label class="form-label" style="font-size:11px;">Tonnage (MT)</label>
         <input type="text" id="cdTonnage" class="form-control" placeholder="e.g. 45.5 MT">
       </div>
+    </div>
+    <!-- Subtasks section (L/L0/L1/L2 can create; everyone sees) -->
+    <div id="tdSubtaskSection" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label class="form-label" style="margin:0;">Subtasks</label>
+        <button id="tdAddSubtaskBtn" class="btn btn-ghost btn-sm" onclick="toggleSubtaskForm()" style="display:none;">+ Add Subtask</button>
+      </div>
+      <div id="tdSubtaskForm" style="display:none;background:var(--bg-secondary);padding:10px;border-radius:var(--radius);margin-bottom:8px;">
+        <input type="text" id="stTitle" class="form-control" placeholder="Subtask title *" style="margin-bottom:6px;">
+        <div class="form-row" style="margin-bottom:0;">
+          <select id="stAssignee" class="form-control" style="font-size:12px;"></select>
+          <input type="date" id="stDueDate" class="form-control" style="font-size:12px;">
+          <button class="btn btn-primary btn-sm" onclick="saveSubtask()">Add</button>
+        </div>
+      </div>
+      <div id="tdSubtaskList"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeTaskDetailModal()">Close</button>
@@ -324,8 +348,18 @@
     </div>
     <div id="clAlert" class="alert alert-error"></div>
     <div class="form-group">
+      <label class="form-label">Link to Task (Drawing) *</label>
+      <select id="clTaskSelect" class="form-control" onchange="onConcurrenceTaskSelect()">
+        <option value="">— Select a task / drawing —</option>
+      </select>
+      <div class="form-hint">Selecting a task auto-fills the title and links its uploaded PDF.</div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Drawing / Document Title *</label>
       <input type="text" id="clTitle" class="form-control" placeholder="e.g. Foundation Plan — Block A">
+    </div>
+    <div id="clPdfInfo" style="display:none;font-size:12px;padding:6px 10px;background:var(--green-pale);border-radius:var(--radius);color:var(--green-dark);margin-bottom:8px;">
+      📎 PDF from task will be linked to this concurrence.
     </div>
     <div class="form-group">
       <label class="form-label">Description / Notes</label>
@@ -339,6 +373,7 @@
       <div id="reviewerCheckboxes" class="assignee-check-list" style="max-height:200px;"></div>
       <div class="form-hint">Auto-add pulls in everyone who has tasks in this project.</div>
     </div>
+    <input type="hidden" id="clLinkedTaskId">
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeConcurrenceModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveConcurrence()">Create Concurrence</button>
@@ -467,6 +502,7 @@
       <div class="meta-item"><span class="meta-label">Due Date</span><span class="meta-value" style="${overdue?'color:var(--danger);font-weight:600;':''}">${APP.formatDate(project.dueDate)}</span></div>
       <div class="meta-item"><span class="meta-label">Assignee(s)</span><span class="meta-value">${assigneeNames.join(', ') || '—'}</span></div>
       <div class="meta-item"><span class="meta-label">Created By</span><span class="meta-value">${APP.getUserName(project.createdBy)}</span></div>
+      ${project.scopeLink ? `<div class="meta-item"><span class="meta-label">Scope Link</span><span class="meta-value"><a href="${APP.escapeHtml(project.scopeLink)}" target="_blank" rel="noopener noreferrer" style="color:var(--purple);text-decoration:underline;">🔗 Open Reference</a></span></div>` : ''}
     `;
   }
 
@@ -638,6 +674,10 @@
 
     document.getElementById('tdSaveBtn').style.display = (isAssignee || canEdit) ? 'inline-flex' : 'none';
     document.getElementById('taskDetailModal').classList.add('open');
+
+    // Render subtasks
+    document.getElementById('tdSubtaskForm').style.display = 'none';
+    renderSubtasks(taskDetailId);
   }
 
   function toggleCompletionFields() {
@@ -692,6 +732,22 @@
     }
 
     APP.updateTask(taskDetailId, updates);
+
+    // If this task has a PDF and is linked to a concurrence, sync the PDF to the concurrence record
+    // so reviewers and the sign-off view always see the latest drawing.
+    if (updates.pdfData) {
+      const updatedTask = APP.getTaskById(taskDetailId);
+      const concurrences = APP.getConcurrences().filter(c => c.linkedTaskId === taskDetailId);
+      concurrences.forEach(c => {
+        APP.saveConcurrences(
+          APP.getConcurrences().map(cc => cc.id === c.id
+            ? { ...cc, linkedPdfData: updates.pdfData, linkedPdfName: updates.pdfName || updatedTask.pdfName }
+            : cc
+          )
+        );
+      });
+    }
+
     closeTaskDetailModal();
     renderTaskStats();
     renderTasks();
@@ -703,12 +759,81 @@
     document.getElementById('pdfFileInput').value = '';
   }
 
+  // ── Subtasks ──────────────────────────────────────────────────────
+  function renderSubtasks(taskId) {
+    const t = APP.getTaskById(taskId);
+    if (!t) return;
+    const subtasks = t.subtasks || [];
+    const canManage = APP.canCreateSubtasks(currentUser);
+
+    // Show/hide the add button
+    document.getElementById('tdAddSubtaskBtn').style.display = canManage ? 'inline-flex' : 'none';
+
+    // Populate the assignee dropdown in the add form
+    if (canManage) {
+      const users = APP.getAssignableUsers(currentUser);
+      document.getElementById('stAssignee').innerHTML =
+        '<option value="">— Assignee (optional) —</option>' +
+        users.map(u => `<option value="${u.id}">${APP.escapeHtml(u.name)}</option>`).join('');
+      // Apply project due date cap on subtask date
+      if (project && project.dueDate) {
+        document.getElementById('stDueDate').max = project.dueDate.split('T')[0];
+      }
+    }
+
+    const list = document.getElementById('tdSubtaskList');
+    if (subtasks.length === 0) {
+      list.innerHTML = '<p style="font-size:12px;color:var(--text-muted);">No subtasks yet.</p>';
+      return;
+    }
+    list.innerHTML = subtasks.map(s => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+        <input type="checkbox" ${s.status==='Done'?'checked':''} style="width:15px;height:15px;accent-color:var(--green);flex-shrink:0;"
+          onchange="toggleSubtaskDone('${taskId}','${s.id}',this.checked)">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;${s.status==='Done'?'text-decoration:line-through;color:var(--text-muted);':''}">${APP.escapeHtml(s.title)}</div>
+          ${s.assigneeId || s.dueDate ? `<div style="font-size:10px;color:var(--text-muted);">${s.assigneeId?'👤 '+APP.getUserName(s.assigneeId):''}${s.dueDate?' · 📅 '+APP.formatDate(s.dueDate):''}</div>` : ''}
+        </div>
+        ${canManage ? `<button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:10px;color:var(--danger);" onclick="removeSubtask('${taskId}','${s.id}')">✕</button>` : ''}
+      </div>`).join('');
+  }
+
+  function toggleSubtaskForm() {
+    const f = document.getElementById('tdSubtaskForm');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    if (f.style.display === 'block') document.getElementById('stTitle').focus();
+  }
+
+  function saveSubtask() {
+    const title = document.getElementById('stTitle').value.trim();
+    if (!title) return;
+    APP.addSubtask(taskDetailId, {
+      title,
+      assigneeId: document.getElementById('stAssignee').value || null,
+      dueDate:    document.getElementById('stDueDate').value  || null
+    });
+    document.getElementById('stTitle').value = '';
+    document.getElementById('stDueDate').value = '';
+    document.getElementById('stAssignee').value = '';
+    renderSubtasks(taskDetailId);
+  }
+
+  function toggleSubtaskDone(taskId, subtaskId, done) {
+    APP.updateSubtask(taskId, subtaskId, { status: done ? 'Done' : 'To Do' });
+    renderSubtasks(taskId);
+  }
+
+  function removeSubtask(taskId, subtaskId) {
+    APP.deleteSubtask(taskId, subtaskId);
+    renderSubtasks(taskId);
+  }
+
   // ── Task Create/Edit Modal ────────────────────────────────────────
-  // L (HOD) and L1 (Manager) can pick any task due date.
-  // Everyone else is capped at the project due date.
+  // Only L/L0 (HOD) can pick task due dates beyond the project due date.
+  // L1 and below are capped at the project due date.
   function applyTaskDueDateMax() {
     const input = document.getElementById('tDueDate');
-    const canOverride = currentUser.level === 'L' || currentUser.level === 'L0' || currentUser.level === 'L1';
+    const canOverride = currentUser.level === 'L' || currentUser.level === 'L0';
     if (!canOverride && project && project.dueDate) {
       input.max = project.dueDate.split('T')[0];
     } else {
@@ -724,6 +849,10 @@
     document.getElementById('tDueDate').value  = '';
     document.getElementById('editTaskId').value = '';
     document.getElementById('tSelfAssign').checked = false;
+    document.getElementById('tCreateConcurrence').checked = false;
+    // Show concurrence checkbox for L1 and admin on new tasks only
+    document.getElementById('tConcurrenceRow').style.display =
+      APP.canCreateConcurrence(currentUser) ? 'block' : 'none';
     applyTaskDueDateMax();
     populateAssigneeCheckboxes([]);
     document.getElementById('taskModal').classList.add('open');
@@ -740,6 +869,7 @@
     document.getElementById('editTaskId').value = taskId;
     const assigneeIds = APP.getTaskAssigneeIds(t);
     document.getElementById('tSelfAssign').checked = assigneeIds.includes(currentUser.id);
+    document.getElementById('tConcurrenceRow').style.display = 'none'; // hide on edit
     applyTaskDueDateMax();
     populateAssigneeCheckboxes(assigneeIds);
     document.getElementById('taskModal').classList.add('open');
@@ -778,8 +908,8 @@
 
     if (!title) return APP.showAlert('taskModalAlert', 'Task title is required.');
 
-    // Enforce due date cap for non-L/L1 users
-    const canOverrideDue = currentUser.level === 'L' || currentUser.level === 'L0' || currentUser.level === 'L1';
+    // Enforce due date cap — only L/L0 (HOD) can exceed project due date
+    const canOverrideDue = currentUser.level === 'L' || currentUser.level === 'L0';
     if (!canOverrideDue && dueDate && project && project.dueDate) {
       if (dueDate > project.dueDate.split('T')[0]) {
         return APP.showAlert('taskModalAlert', `Due date cannot be after the project due date (${APP.formatDate(project.dueDate)}).`);
@@ -792,14 +922,23 @@
       checked.unshift(currentUser.id);
     }
 
+    const createConc = !editId && document.getElementById('tCreateConcurrence').checked;
+    let newTaskId = null;
+
     if (editId) {
       APP.updateTask(editId, { title, description: desc, priority, dueDate: dueDate || null, assigneeIds: checked, assigneeId: checked[0] || null });
     } else {
-      APP.createTask({ projectId, title, description: desc, priority, dueDate: dueDate || null, assigneeIds: checked, assigneeId: checked[0] || null }, currentUser.id);
+      const newTask = APP.createTask({ projectId, title, description: desc, priority, dueDate: dueDate || null, assigneeIds: checked, assigneeId: checked[0] || null }, currentUser.id);
+      newTaskId = newTask ? newTask.id : null;
     }
     closeTaskModal();
     renderTaskStats();
     renderTasks();
+
+    // If "Create Concurrence" was checked, open the concurrence modal pre-populated with this task
+    if (createConc && newTaskId) {
+      openNewConcurrenceModal(newTaskId);
+    }
   }
 
   // ── Edit Project Modal ────────────────────────────────────────────
@@ -880,6 +1019,7 @@
             <div class="concurrence-title">📄 ${APP.escapeHtml(cl.drawingTitle)}</div>
             ${cl.description ? `<div class="concurrence-desc">${APP.escapeHtml(cl.description)}</div>` : ''}
             <div style="font-size:11px;color:var(--text-muted);">Created by ${APP.getUserName(cl.createdBy)} · ${APP.formatDate(cl.createdAt)}</div>
+            ${cl.linkedPdfData ? `<a href="${cl.linkedPdfData}" download="${cl.linkedPdfName||'drawing.pdf'}" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--purple);text-decoration:underline;margin-top:4px;" onclick="event.stopPropagation()">📎 ${APP.escapeHtml(cl.linkedPdfName||'drawing.pdf')}</a>` : ''}
           </div>
           ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteConcurrence('${cl.id}')">🗑️</button>` : ''}
         </div>
@@ -910,13 +1050,46 @@
   function sendToClient(id)        { if (confirm('Mark as sent to client?')) { APP.markSentToClient(id); renderConcurrences(); } }
   function deleteConcurrence(id)   { if (confirm('Delete this concurrence and its sign-off tasks?')) { APP.deleteConcurrence(id); renderConcurrences(); renderTaskStats(); renderTasks(); } }
 
-  function openNewConcurrenceModal() {
+  function openNewConcurrenceModal(preTaskId) {
+    // Populate task dropdown with all project tasks
+    const tasks = APP.getProjectTasks(projectId);
+    const sel = document.getElementById('clTaskSelect');
+    sel.innerHTML = '<option value="">— Select a task / drawing —</option>' +
+      tasks.map(t => `<option value="${t.id}">${APP.escapeHtml(t.title)}${t.pdfData ? ' 📎' : ''}</option>`).join('');
+
     document.getElementById('clTitle').value = '';
     document.getElementById('clDesc').value  = '';
-    populateConcurrenceReviewerList([]);
+    document.getElementById('clLinkedTaskId').value = '';
+    document.getElementById('clPdfInfo').style.display = 'none';
+
+    if (preTaskId) {
+      sel.value = preTaskId;
+      onConcurrenceTaskSelect(); // auto-fill from that task
+    } else {
+      populateConcurrenceReviewerList([]);
+    }
     document.getElementById('concurrenceModal').classList.add('open');
   }
   function closeConcurrenceModal() { document.getElementById('concurrenceModal').classList.remove('open'); }
+
+  // When a task is selected from the dropdown, auto-fill title, PDF info, and reviewers
+  function onConcurrenceTaskSelect() {
+    const taskId = document.getElementById('clTaskSelect').value;
+    document.getElementById('clLinkedTaskId').value = taskId;
+    if (!taskId) {
+      document.getElementById('clTitle').value = '';
+      document.getElementById('clPdfInfo').style.display = 'none';
+      populateConcurrenceReviewerList([]);
+      return;
+    }
+    const t = APP.getTaskById(taskId);
+    if (!t) return;
+    document.getElementById('clTitle').value = t.title;
+    document.getElementById('clPdfInfo').style.display = t.pdfData ? 'block' : 'none';
+    // Pre-check all task assignees as reviewers
+    const assigneeIds = APP.getTaskAssigneeIds(t);
+    populateConcurrenceReviewerList(assigneeIds);
+  }
 
   function populateConcurrenceReviewerList(preChecked) {
     const users = APP.getUsers().filter(u => u.id !== currentUser.id);
@@ -949,7 +1122,17 @@
       userId: cb.value, name: cb.dataset.name, designation: cb.dataset.desig,
       signed: false, signedAt: null
     }));
-    APP.createConcurrence({ projectId, drawingTitle: title, description: desc, reviewers }, currentUser.id);
+    const linkedTaskId = document.getElementById('clLinkedTaskId').value || null;
+    const linkedTask   = linkedTaskId ? APP.getTaskById(linkedTaskId) : null;
+    APP.createConcurrence({
+      projectId,
+      drawingTitle: title,
+      description: desc,
+      reviewers,
+      linkedTaskId:  linkedTaskId,
+      linkedPdfData: linkedTask && linkedTask.pdfData  ? linkedTask.pdfData  : null,
+      linkedPdfName: linkedTask && linkedTask.pdfName  ? linkedTask.pdfName  : null
+    }, currentUser.id);
     closeConcurrenceModal();
     renderConcurrences();
     renderTaskStats();
@@ -995,6 +1178,13 @@
     document.getElementById('spDesc').value  = '';
     document.getElementById('spPriority').value = 'Medium';
     document.getElementById('spDueDate').value  = '';
+    // Subproject due date cannot exceed parent project due date
+    const spInput = document.getElementById('spDueDate');
+    if (project && project.dueDate) {
+      spInput.max = project.dueDate.split('T')[0];
+    } else {
+      spInput.removeAttribute('max');
+    }
     document.getElementById('subprojectModal').classList.add('open');
   }
   function closeSubprojectModal() { document.getElementById('subprojectModal').classList.remove('open'); }
