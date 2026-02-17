@@ -6,43 +6,44 @@
   <title>Project Detail | LCE Project Hub</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* QC Sign-off styles */
-    .checklist-card {
-      background: white; border-radius: var(--radius-lg); border: 1px solid var(--border);
-      padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
-      border-left: 4px solid var(--purple);
-    }
-    .checklist-card.sent { border-left-color: var(--green); }
-    .checklist-title { font-size: 15px; font-weight: 600; color: var(--purple-dark); margin-bottom: 4px; }
-    .checklist-desc  { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
-    .reviewer-row {
-      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-      background: var(--bg); border-radius: var(--radius); margin-bottom: 6px;
-      border: 1px solid var(--border);
-    }
-    .reviewer-row.signed   { background: var(--green-pale); border-color: #C8E6C9; }
-    .reviewer-row .rv-name { flex: 1; font-size: 13px; font-weight: 500; }
-    .reviewer-row .rv-desig { font-size: 11px; color: var(--text-muted); }
-    .reviewer-row .rv-date  { font-size: 11px; color: var(--green-dark); }
-    .sign-check { width: 20px; height: 20px; accent-color: var(--green); }
-    .hod-signoff {
-      margin-top: 14px; padding: 14px; background: #F3EEF9;
-      border-radius: var(--radius); border: 1px solid var(--border);
-    }
-    .sent-banner {
-      background: var(--green-pale); border: 1px solid #C8E6C9;
-      border-radius: var(--radius); padding: 10px 14px;
-      font-size: 13px; color: var(--green-dark); font-weight: 600;
-      display: flex; align-items: center; gap: 8px; margin-top: 10px;
-    }
-    /* L1 tracker */
-    .task-tracker {
-      background: #F3EEF9; border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 10px 14px; margin-bottom: 6px;
-    }
-    .tracker-title { font-size: 13px; font-weight: 600; color: var(--purple-dark); }
-    .tracker-holder { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    .badge-acceptance { background: #F3EEF9; color: var(--purple); }
+    /* ── Concurrence styles ── */
+    .concurrence-card { background:#fff; border-radius:var(--radius-lg); border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:var(--shadow); border-left:4px solid var(--purple); }
+    .concurrence-card.sent { border-left-color:var(--green); }
+    .concurrence-title { font-size:15px; font-weight:600; color:var(--purple-dark); margin-bottom:4px; }
+    .concurrence-desc  { font-size:12px; color:var(--text-muted); margin-bottom:12px; }
+    .reviewer-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg); border-radius:var(--radius); margin-bottom:6px; border:1px solid var(--border); }
+    .reviewer-row.signed   { background:var(--green-pale); border-color:#C8E6C9; }
+    .reviewer-row .rv-name { flex:1; font-size:13px; font-weight:500; }
+    .reviewer-row .rv-desig { font-size:11px; color:var(--text-muted); }
+    .reviewer-row .rv-date  { font-size:11px; color:var(--green-dark); }
+    .hod-signoff { margin-top:14px; padding:14px; background:#F3EEF9; border-radius:var(--radius); border:1px solid var(--border); }
+    .sent-banner { background:var(--green-pale); border:1px solid #C8E6C9; border-radius:var(--radius); padding:10px 14px; font-size:13px; color:var(--green-dark); font-weight:600; display:flex; align-items:center; gap:8px; margin-top:10px; }
+    /* ── Task tracker ── */
+    .badge-acceptance { background:#F3EEF9; color:var(--purple); }
+    .with-badge { font-size:11px; background:var(--purple-pale); color:var(--purple); padding:2px 8px; border-radius:4px; font-weight:500; }
+    /* ── PDF badge ── */
+    .pdf-badge { font-size:10px; background:#E3F2FD; color:#1565C0; padding:2px 7px; border-radius:4px; font-weight:500; display:inline-flex; align-items:center; gap:3px; text-decoration:none; }
+    .pdf-badge:hover { background:#BBDEFB; }
+    /* ── Completion data ── */
+    .completion-chip { font-size:10px; background:#E8F5E9; color:#2E7D32; padding:2px 7px; border-radius:4px; font-weight:500; }
+    /* ── Notes ── */
+    .note-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:10px; }
+    .note-meta { font-size:11px; color:var(--text-muted); margin-bottom:5px; }
+    .note-text { font-size:13px; white-space:pre-wrap; }
+    /* ── Subproject card ── */
+    .sub-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:box-shadow 0.15s; border-left:3px solid var(--purple-light); }
+    .sub-card:hover { box-shadow:0 4px 12px rgba(102,51,170,0.12); }
+    /* ── Assignee pills ── */
+    .assignee-pill { display:inline-flex; align-items:center; gap:4px; background:var(--purple-pale); color:var(--purple-dark); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500; margin:1px 2px; }
+    /* ── Multi-select checkboxes ── */
+    .assignee-check-list { max-height:180px; overflow-y:auto; border:1.5px solid var(--border); border-radius:var(--radius); padding:8px; }
+    .assignee-check-item { display:flex; align-items:center; gap:8px; padding:6px; border-radius:6px; cursor:pointer; transition:background 0.1s; }
+    .assignee-check-item:hover { background:#f5f3fa; }
+    .assignee-check-item label { cursor:pointer; flex:1; }
+    /* ── PDF upload area ── */
+    .pdf-upload-area { border:2px dashed var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; transition:border-color 0.15s; }
+    .pdf-upload-area:hover { border-color:var(--purple); }
+    .pdf-upload-area.has-file { border-color:var(--green); background:var(--green-pale); }
   </style>
 </head>
 <body>
@@ -56,21 +57,15 @@
     </div>
     <div class="sidebar-user">
       <div class="user-avatar" id="userAvatar">?</div>
-      <div class="user-name" id="userName">Loading...</div>
+      <div class="user-name"  id="userName">Loading...</div>
       <div class="user-desig" id="userDesig"></div>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" href="dashboard.html">
-        <span class="nav-icon">🏠</span><span>Dashboard</span>
-      </a>
-      <a class="nav-item" href="kanban.html">
-        <span class="nav-icon">📊</span><span>My Kanban</span>
-      </a>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a class="nav-item" href="kanban.html"><span class="nav-icon">📊</span><span>My Board</span></a>
     </nav>
     <div class="sidebar-footer">
-      <button class="nav-item" onclick="APP.logout()">
-        <span class="nav-icon">🚪</span><span>Logout</span>
-      </button>
+      <button class="nav-item" onclick="APP.logout()"><span class="nav-icon">🚪</span><span>Logout</span></button>
     </div>
   </aside>
 
@@ -83,12 +78,8 @@
         <span class="topbar-title" id="topbarTitle">Project</span>
       </div>
       <div style="display:flex;gap:8px;">
-        <button id="addTaskBtn" class="btn btn-green btn-sm" onclick="openNewTaskModal()" style="display:none;">
-          + Add Task
-        </button>
-        <button id="editProjectBtn" class="btn btn-ghost btn-sm" onclick="openEditProjectModal()" style="display:none;">
-          ✏️ Edit
-        </button>
+        <button id="addTaskBtn"    class="btn btn-green  btn-sm" onclick="openNewTaskModal()"    style="display:none;">+ Add Task</button>
+        <button id="editProjectBtn" class="btn btn-ghost btn-sm" onclick="openEditProjectModal()" style="display:none;">✏️ Edit</button>
       </div>
     </div>
 
@@ -112,49 +103,67 @@
       <!-- Tabs -->
       <div class="tabs" id="tabBar">
         <button class="tab-btn active" onclick="switchTab('tasks',this)">📋 Tasks</button>
-        <button class="tab-btn" id="qcTabBtn" onclick="switchTab('qc',this)" style="display:none;">🔏 QC Sign-off</button>
+        <button class="tab-btn" id="concurrenceTabBtn" onclick="switchTab('concurrence',this)" style="display:none;">🔏 Concurrence</button>
+        <button class="tab-btn" id="subprojectsTabBtn" onclick="switchTab('subprojects',this)" style="display:none;">📁 Subprojects</button>
+        <button class="tab-btn" onclick="switchTab('notes',this)">📝 Notes</button>
       </div>
 
       <!-- ── Tasks Tab ── -->
       <div id="tabTasks">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-          <div id="l1TrackInfo" style="display:none;font-size:12px;color:var(--purple);font-weight:500;">
-            👁 Tracking all tasks across team
-          </div>
-          <div style="display:flex;gap:8px;">
-            <select id="statusFilter" class="form-control" style="width:auto;font-size:13px;" onchange="renderTasks()">
-              <option value="">All Status</option>
-              <option value="To Do">To Do</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Acceptance">Acceptance</option>
-              <option value="Done">Done</option>
-            </select>
-          </div>
+          <div id="l1TrackInfo" style="display:none;font-size:12px;color:var(--purple);font-weight:500;">👁 Tracking all tasks across team</div>
+          <select id="statusFilter" class="form-control" style="width:auto;font-size:13px;" onchange="renderTasks()">
+            <option value="">All Status</option>
+            <option value="To Do">To Do</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Acceptance">Acceptance</option>
+            <option value="Done">Done</option>
+          </select>
         </div>
         <div id="taskList" class="task-list"></div>
       </div>
 
-      <!-- ── QC Sign-off Tab ── -->
-      <div id="tabQC" style="display:none;">
+      <!-- ── Concurrence Tab ── -->
+      <div id="tabConcurrence" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
           <div>
-            <h3 style="font-size:16px;color:var(--purple-dark);">Drawing Sign-off Checklists</h3>
-            <p style="font-size:12px;color:var(--text-muted);margin-top:3px;">Create QC checklists for drawings ready for client submission</p>
+            <h3 style="font-size:16px;color:var(--purple-dark);">Concurrence Sign-off</h3>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:3px;">L1 creates concurrences. HOD gives final sign-off.</p>
           </div>
-          <button id="newChecklistBtn" class="btn btn-primary btn-sm" onclick="openNewChecklistModal()" style="display:none;">
-            + New Checklist
-          </button>
+          <button id="newConcurrenceBtn" class="btn btn-primary btn-sm" onclick="openNewConcurrenceModal()" style="display:none;">+ New Concurrence</button>
         </div>
-        <div id="checklistList"></div>
+        <div id="concurrenceList"></div>
+      </div>
+
+      <!-- ── Subprojects Tab ── -->
+      <div id="tabSubprojects" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <h3 style="font-size:16px;color:var(--purple-dark);">Subprojects</h3>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:3px;">Break this project into smaller sub-deliverables.</p>
+          </div>
+          <button id="newSubprojectBtn" class="btn btn-green btn-sm" onclick="openNewSubprojectModal()" style="display:none;">+ New Subproject</button>
+        </div>
+        <div id="subprojectList"></div>
+      </div>
+
+      <!-- ── Notes Tab ── -->
+      <div id="tabNotes" style="display:none;">
+        <div style="margin-bottom:16px;">
+          <textarea id="newNoteText" class="form-control" rows="3" placeholder="Add a note, comment or update about this project..."></textarea>
+          <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="addNote()">Add Note</button>
+        </div>
+        <div id="notesList"></div>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- ── Task Modal ─────────────────────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ── Task Modal ── -->
 <div class="modal-overlay" id="taskModal">
-  <div class="modal">
+  <div class="modal" style="max-width:600px;">
     <div class="modal-header">
       <h3 id="taskModalTitle">Add Task</h3>
       <button class="modal-close" onclick="closeTaskModal()">×</button>
@@ -166,7 +175,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Description</label>
-      <textarea id="tDesc" class="form-control" rows="2" placeholder="Details about this task..."></textarea>
+      <textarea id="tDesc" class="form-control" rows="2" placeholder="Details..."></textarea>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -183,10 +192,13 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Assign To</label>
-      <select id="tAssignee" class="form-control">
-        <option value="">— Unassigned —</option>
-      </select>
+      <label class="form-label">Assign To (select one or more)</label>
+      <div style="margin-bottom:6px;">
+        <label style="font-size:12px;color:var(--purple);cursor:pointer;">
+          <input type="checkbox" id="tSelfAssign" style="margin-right:4px;" onchange="toggleSelfAssign()"> Assign to myself
+        </label>
+      </div>
+      <div class="assignee-check-list" id="tAssigneeList"></div>
     </div>
     <input type="hidden" id="editTaskId">
     <div class="modal-footer">
@@ -196,7 +208,53 @@
   </div>
 </div>
 
-<!-- ── Edit Project Modal ─────────────────────────────────────── -->
+<!-- ── Task Detail / Edit + PDF + Completion Modal ── -->
+<div class="modal-overlay" id="taskDetailModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 id="tdTitle">Task Detail</h3>
+      <button class="modal-close" onclick="closeTaskDetailModal()">×</button>
+    </div>
+    <div id="tdBody"></div>
+    <!-- PDF upload section (shown to assignees) -->
+    <div id="tdPdfSection" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <label class="form-label">Upload Deliverable PDF</label>
+      <div class="pdf-upload-area" id="pdfDropArea" onclick="document.getElementById('pdfFileInput').click()">
+        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none;" onchange="onPdfSelected(event)">
+        <div id="pdfUploadText">📎 Click to attach PDF (max 1 MB)</div>
+      </div>
+      <div id="pdfExistingLink" style="margin-top:6px;"></div>
+    </div>
+    <!-- Completion data (shown when moving to Done) -->
+    <div id="tdCompletionSection" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <label class="form-label">Completion Details *</label>
+      <div class="form-row" style="margin-bottom:8px;">
+        <div class="form-group">
+          <label class="form-label" style="font-size:11px;">Drawing Type</label>
+          <select id="cdType" class="form-control" onchange="toggleCompletionFields()">
+            <option value="">— Select —</option>
+            <option value="civil">Civil Design</option>
+            <option value="structural">Structural Design</option>
+          </select>
+        </div>
+      </div>
+      <div id="cdCivilRow" style="display:none;" class="form-group">
+        <label class="form-label" style="font-size:11px;">RCC Details</label>
+        <input type="text" id="cdRcc" class="form-control" placeholder="e.g. M25 grade, 120 MT">
+      </div>
+      <div id="cdStructuralRow" style="display:none;" class="form-group">
+        <label class="form-label" style="font-size:11px;">Tonnage (MT)</label>
+        <input type="text" id="cdTonnage" class="form-control" placeholder="e.g. 45.5 MT">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTaskDetailModal()">Close</button>
+      <button id="tdSaveBtn" class="btn btn-primary" onclick="saveTaskDetail()" style="display:none;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Project Modal ── -->
 <div class="modal-overlay" id="editProjectModal">
   <div class="modal">
     <div class="modal-header">
@@ -231,17 +289,9 @@
         </select>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Due Date</label>
-        <input type="date" id="epDueDate" class="form-control">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Assignee</label>
-        <select id="epAssignee" class="form-control">
-          <option value="">— Unassigned —</option>
-        </select>
-      </div>
+    <div class="form-group">
+      <label class="form-label">Due Date</label>
+      <input type="date" id="epDueDate" class="form-control">
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeEditProjectModal()">Cancel</button>
@@ -250,7 +300,7 @@
   </div>
 </div>
 
-<!-- ── Delete Task confirm ────────────────────────────────────── -->
+<!-- ── Delete Task confirm ── -->
 <div class="modal-overlay" id="deleteTaskModal">
   <div class="modal" style="max-width:360px;">
     <div class="modal-header">
@@ -265,12 +315,12 @@
   </div>
 </div>
 
-<!-- ── New Checklist Modal ────────────────────────────────────── -->
-<div class="modal-overlay" id="checklistModal">
+<!-- ── New Concurrence Modal ── -->
+<div class="modal-overlay" id="concurrenceModal">
   <div class="modal" style="max-width:580px;">
     <div class="modal-header">
-      <h3>New QC Sign-off Checklist</h3>
-      <button class="modal-close" onclick="closeChecklistModal()">×</button>
+      <h3>New Concurrence</h3>
+      <button class="modal-close" onclick="closeConcurrenceModal()">×</button>
     </div>
     <div id="clAlert" class="alert alert-error"></div>
     <div class="form-group">
@@ -279,16 +329,56 @@
     </div>
     <div class="form-group">
       <label class="form-label">Description / Notes</label>
-      <textarea id="clDesc" class="form-control" rows="2" placeholder="Optional notes about this sign-off..."></textarea>
+      <textarea id="clDesc" class="form-control" rows="2" placeholder="Optional notes..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Reviewers who must sign *</label>
-      <div id="reviewerCheckboxes" style="max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;"></div>
-      <div class="form-hint">Select team members who need to QC-sign this drawing before HOD approval.</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="autoPopulateReviewers()">⚡ Auto-add task participants</button>
+      </div>
+      <div id="reviewerCheckboxes" class="assignee-check-list" style="max-height:200px;"></div>
+      <div class="form-hint">Auto-add pulls in everyone who has tasks in this project.</div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeChecklistModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveChecklist()">Create Checklist</button>
+      <button class="btn btn-ghost" onclick="closeConcurrenceModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConcurrence()">Create Concurrence</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── New Subproject Modal ── -->
+<div class="modal-overlay" id="subprojectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Subproject</h3>
+      <button class="modal-close" onclick="closeSubprojectModal()">×</button>
+    </div>
+    <div id="spAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label class="form-label">Subproject Title *</label>
+      <input type="text" id="spTitle" class="form-control" placeholder="e.g. Block A Foundation">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea id="spDesc" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select id="spPriority" class="form-control">
+          <option value="High">🔴 High</option>
+          <option value="Medium" selected>🟡 Medium</option>
+          <option value="Low">🟢 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" id="spDueDate" class="form-control">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSubprojectModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSubproject()">Create Subproject</button>
     </div>
   </div>
 </div>
@@ -298,15 +388,17 @@
   let currentUser      = null;
   let projectId        = null;
   let project          = null;
-  let deleteTaskTarget = null;
   let currentTab       = 'tasks';
+  let deleteTaskTarget = null;
+  let taskDetailId     = null;
+  let pendingPdfData   = null;
+  let pendingPdfName   = null;
 
   function getProjectId() { return new URLSearchParams(window.location.search).get('id'); }
 
   function init() {
     currentUser = APP.requireAuth();
     if (!currentUser) return;
-
     projectId = getProjectId();
     project   = APP.getProjectById(projectId);
     if (!project) { window.location.href = 'dashboard.html'; return; }
@@ -316,19 +408,22 @@
     document.getElementById('userDesig').textContent  = currentUser.designation;
     document.getElementById('topbarTitle').textContent = project.title;
 
-    if (APP.canCreateTasks(currentUser)) document.getElementById('addTaskBtn').style.display = 'flex';
+    if (APP.canCreateTasks(currentUser))    document.getElementById('addTaskBtn').style.display    = 'flex';
     if (APP.canCreateProjects(currentUser)) document.getElementById('editProjectBtn').style.display = 'flex';
 
-    // QC Sign-off tab: show for L, L0 (admin) and visible to all
-    if (APP.isAdmin(currentUser)) {
-      document.getElementById('qcTabBtn').style.display = 'inline-flex';
-      document.getElementById('newChecklistBtn').style.display = 'flex';
-    } else {
-      // Show tab to everyone so they can see their sign-off items
-      document.getElementById('qcTabBtn').style.display = 'inline-flex';
+    // Concurrence tab: visible to everyone; Create button for L1+ and admin
+    document.getElementById('concurrenceTabBtn').style.display = 'inline-flex';
+    if (APP.canCreateConcurrence(currentUser)) {
+      document.getElementById('newConcurrenceBtn').style.display = 'flex';
     }
 
-    // L1 tracker visibility
+    // Subprojects tab for L1+ and admin
+    if (APP.canCreateSubprojects(currentUser)) {
+      document.getElementById('subprojectsTabBtn').style.display = 'inline-flex';
+      document.getElementById('newSubprojectBtn').style.display  = 'flex';
+    }
+
+    // L1 / admin tracking banner
     if (currentUser.level === 'L1' || APP.isAdmin(currentUser)) {
       document.getElementById('l1TrackInfo').style.display = 'block';
     }
@@ -343,10 +438,14 @@
     currentTab = tab;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tabTasks').style.display = tab === 'tasks' ? 'block' : 'none';
-    document.getElementById('tabQC').style.display    = tab === 'qc'    ? 'block' : 'none';
+    document.getElementById('tabTasks').style.display        = tab === 'tasks'       ? 'block' : 'none';
+    document.getElementById('tabConcurrence').style.display  = tab === 'concurrence' ? 'block' : 'none';
+    document.getElementById('tabSubprojects').style.display  = tab === 'subprojects' ? 'block' : 'none';
+    document.getElementById('tabNotes').style.display        = tab === 'notes'       ? 'block' : 'none';
     document.getElementById('addTaskBtn').style.display = (tab === 'tasks' && APP.canCreateTasks(currentUser)) ? 'flex' : 'none';
-    if (tab === 'qc') renderChecklists();
+    if (tab === 'concurrence') renderConcurrences();
+    if (tab === 'subprojects') renderSubprojects();
+    if (tab === 'notes')       renderNotes();
   }
 
   // ── Project Header ────────────────────────────────────────────────
@@ -355,7 +454,6 @@
     ph.className = `project-detail-header priority-${project.priority}`;
     document.getElementById('projectTitle').textContent = project.title;
     document.getElementById('projectDesc').textContent  = project.description || '';
-
     const overdue = project.dueDate && new Date(project.dueDate) < new Date() && project.status !== 'Completed';
     const statusClass = (project.status || 'Not Started').replace(/\s+/g,'').toLowerCase();
     document.getElementById('projectBadges').innerHTML = `
@@ -363,12 +461,12 @@
       <span class="badge badge-${statusClass}">${project.status || 'Not Started'}</span>
       ${overdue ? '<span class="badge" style="background:#FDECEA;color:var(--danger);">Overdue</span>' : ''}
     `;
+    const assigneeNames = APP.getProjectAssigneeIds(project).map(id => APP.getUserName(id)).filter(n => n !== '—');
     document.getElementById('projectMeta').innerHTML = `
       <div class="meta-item"><span class="meta-label">Created</span><span class="meta-value">${APP.formatDate(project.createdAt)}</span></div>
       <div class="meta-item"><span class="meta-label">Due Date</span><span class="meta-value" style="${overdue?'color:var(--danger);font-weight:600;':''}">${APP.formatDate(project.dueDate)}</span></div>
-      <div class="meta-item"><span class="meta-label">Assignee</span><span class="meta-value">${APP.getUserName(project.assigneeId)}</span></div>
+      <div class="meta-item"><span class="meta-label">Assignee(s)</span><span class="meta-value">${assigneeNames.join(', ') || '—'}</span></div>
       <div class="meta-item"><span class="meta-label">Created By</span><span class="meta-value">${APP.getUserName(project.createdBy)}</span></div>
-      <div class="meta-item"><span class="meta-label">Assigner</span><span class="meta-value">${APP.getUserName(project.assignerId)}</span></div>
     `;
   }
 
@@ -381,79 +479,62 @@
     const done  = tasks.filter(t => t.status === 'Done').length;
     const pct   = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
     document.getElementById('taskStats').innerHTML = `
-      <div class="stat-card">
-        <div class="stat-value">${tasks.length}</div>
-        <div class="stat-label">Total Tasks</div>
-      </div>
-      <div class="stat-card" style="border-left-color:#aaa;">
-        <div class="stat-value" style="color:#555;">${todo}</div>
-        <div class="stat-label">To Do</div>
-      </div>
-      <div class="stat-card" style="border-left-color:var(--info);">
-        <div class="stat-value" style="color:var(--info);">${inp}</div>
-        <div class="stat-label">In Progress</div>
-      </div>
-      <div class="stat-card" style="border-left-color:var(--purple-light);">
-        <div class="stat-value" style="color:var(--purple);">${acc}</div>
-        <div class="stat-label">Acceptance</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-value" style="color:var(--success);">${done}</div>
-        <div class="stat-label">Done</div>
-      </div>
-      <div class="stat-card" style="border-left-color:var(--green);">
-        <div class="stat-value" style="color:var(--green-dark);font-size:22px;">${pct}%</div>
-        <div class="stat-label">Complete</div>
-      </div>
+      <div class="stat-card"><div class="stat-value">${tasks.length}</div><div class="stat-label">Total Tasks</div></div>
+      <div class="stat-card" style="border-left-color:#aaa;"><div class="stat-value" style="color:#555;">${todo}</div><div class="stat-label">To Do</div></div>
+      <div class="stat-card" style="border-left-color:var(--info);"><div class="stat-value" style="color:var(--info);">${inp}</div><div class="stat-label">In Progress</div></div>
+      <div class="stat-card" style="border-left-color:var(--purple-light);"><div class="stat-value" style="color:var(--purple);">${acc}</div><div class="stat-label">Acceptance</div></div>
+      <div class="stat-card green"><div class="stat-value" style="color:var(--success);">${done}</div><div class="stat-label">Done</div></div>
+      <div class="stat-card" style="border-left-color:var(--green);"><div class="stat-value" style="color:var(--green-dark);font-size:22px;">${pct}%</div><div class="stat-label">Complete</div></div>
     `;
   }
 
   // ── Task List ─────────────────────────────────────────────────────
   function renderTasks() {
-    const filterStatus = document.getElementById('statusFilter').value;
+    const filterStatus  = document.getElementById('statusFilter').value;
     let tasks = APP.getProjectTasks(projectId, currentUser);
     if (filterStatus) tasks = tasks.filter(t => t.status === filterStatus);
 
-    const list      = document.getElementById('taskList');
-    const canDelete = APP.canCreateProjects(currentUser);
-    const canEdit   = APP.canCreateTasks(currentUser);
+    const list        = document.getElementById('taskList');
+    const canDelete   = APP.canCreateProjects(currentUser);
+    const canEdit     = APP.canCreateTasks(currentUser);
     const isL1orAdmin = currentUser.level === 'L1' || APP.isAdmin(currentUser);
 
     if (tasks.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">✅</div>
-          <h3>${filterStatus ? 'No tasks with this status' : 'No tasks yet'}</h3>
-          <p>${canEdit ? 'Click "+ Add Task" to create the first task.' : 'No tasks assigned to you yet.'}</p>
-        </div>`;
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><h3>${filterStatus ? 'No tasks with this status' : 'No tasks yet'}</h3><p>${canEdit ? 'Click "+ Add Task" to create the first task.' : 'No tasks assigned to you yet.'}</p></div>`;
       return;
     }
 
     list.innerHTML = tasks.map(t => {
-      const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
-      const statusClass = t.status.replace(/\s+/g,'').toLowerCase();
-      const assigneeName = APP.getUserName(t.assigneeId);
+      const overdue      = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
+      const statusClass  = t.status.replace(/\s+/g,'').toLowerCase();
+      const assigneeNames = APP.getTaskAssigneeNames(t);
+      const isConcTask   = t.isConcurrenceTask;
+      const hasPdf       = !!t.pdfData;
+      const completionChip = t.completionData
+        ? (t.completionData.type === 'civil'
+            ? `<span class="completion-chip">RCC: ${APP.escapeHtml(t.completionData.rcc||'—')}</span>`
+            : `<span class="completion-chip">Tonnage: ${APP.escapeHtml(t.completionData.tonnage||'—')} MT</span>`)
+        : '';
       return `
-        <div class="task-item priority-${t.priority}">
+        <div class="task-item priority-${t.priority}" onclick="openTaskDetail('${t.id}')" style="cursor:pointer;">
           <div class="task-info">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <span class="task-title">${APP.escapeHtml(t.title)}</span>
-              ${isL1orAdmin ? `
-                <span style="font-size:11px;background:var(--purple-pale);color:var(--purple);padding:2px 8px;border-radius:4px;font-weight:500;">
-                  📌 With: ${APP.escapeHtml(assigneeName)}
-                </span>` : ''}
+              ${isConcTask ? '<span style="font-size:10px;background:#F3EEF9;color:var(--purple);padding:2px 6px;border-radius:4px;">🔏 Concurrence</span>' : ''}
+              ${isL1orAdmin ? `<span class="with-badge">📌 ${assigneeNames.join(', ')}</span>` : ''}
+              ${hasPdf ? `<a class="pdf-badge" href="${t.pdfData}" download="${t.pdfName||'delivery.pdf'}" onclick="event.stopPropagation()">📄 PDF</a>` : ''}
+              ${completionChip}
             </div>
             ${t.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${APP.escapeHtml(t.description)}</div>` : ''}
             <div class="task-meta">
               <span class="badge badge-${statusClass}">${t.status}</span>
               <span class="badge badge-${(t.priority||'medium').toLowerCase()}">${t.priority}</span>
-              ${!isL1orAdmin ? `<span>👤 ${APP.escapeHtml(assigneeName)}</span>` : ''}
               ${t.dueDate ? `<span style="${overdue?'color:var(--danger);font-weight:600;':''}">📅 ${APP.formatDate(t.dueDate)}${overdue?' ⚠️':''}</span>` : ''}
               <span style="color:var(--text-muted);">By: ${APP.getUserName(t.createdBy)}</span>
             </div>
           </div>
-          <div class="task-actions">
-            <select class="status-select" onchange="updateTaskStatus('${t.id}', this.value)">
+          <div class="task-actions" onclick="event.stopPropagation()">
+            <select class="status-select" onchange="handleStatusChange('${t.id}', this.value, this)">
               <option value="To Do"       ${t.status==='To Do'?'selected':''}>To Do</option>
               <option value="In Progress" ${t.status==='In Progress'?'selected':''}>In Progress</option>
               <option value="Acceptance"  ${t.status==='Acceptance'?'selected':''}>Acceptance</option>
@@ -466,13 +547,175 @@
     }).join('');
   }
 
-  function updateTaskStatus(taskId, status) {
-    APP.updateTask(taskId, { status });
+  // ── Status change with Done-completion prompt ────────────────────
+  function handleStatusChange(taskId, newStatus, selectEl) {
+    if (newStatus !== 'Done') {
+      APP.updateTask(taskId, { status: newStatus });
+      renderTaskStats(); renderTasks();
+      return;
+    }
+    // Moving to Done: check if current user is an assignee
+    const task = APP.getTaskById(taskId);
+    const isAssignee = APP.isTaskAssignedTo(task, currentUser.id);
+    if (isAssignee) {
+      // Open detail modal with completion section
+      openTaskDetail(taskId, true);
+    } else {
+      APP.updateTask(taskId, { status: 'Done' });
+      renderTaskStats(); renderTasks();
+    }
+  }
+
+  // ── Task Detail Modal ─────────────────────────────────────────────
+  function openTaskDetail(taskId, requireCompletion) {
+    const t = APP.getTaskById(taskId);
+    if (!t) return;
+    taskDetailId = taskId;
+    pendingPdfData = null; pendingPdfName = null;
+
+    document.getElementById('tdTitle').textContent = t.title;
+
+    const assigneeNames = APP.getTaskAssigneeNames(t);
+    const isAssignee    = APP.isTaskAssignedTo(t, currentUser.id);
+    const canEdit       = APP.canCreateTasks(currentUser) || isAssignee;
+    const proj          = APP.getProjectById(t.projectId);
+
+    document.getElementById('tdBody').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${t.description ? `<p style="font-size:13px;color:var(--text);">${APP.escapeHtml(t.description)}</p>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;">
+          <span class="badge badge-${t.status.replace(/\s+/g,'').toLowerCase()}">${t.status}</span>
+          <span class="badge badge-${(t.priority||'medium').toLowerCase()}">${t.priority}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">
+          <div>📁 Project: <strong>${proj ? APP.escapeHtml(proj.title) : '—'}</strong></div>
+          <div>👤 Assignee(s): <strong>${assigneeNames.join(', ')}</strong></div>
+          ${t.dueDate ? `<div>📅 Due: <strong>${APP.formatDate(t.dueDate)}</strong></div>` : ''}
+          <div>🕐 Created: ${APP.formatDateTime(t.createdAt)} by ${APP.getUserName(t.createdBy)}</div>
+        </div>
+        ${t.completionData ? `
+          <div style="margin-top:8px;padding:10px;background:var(--green-pale);border-radius:var(--radius);">
+            <div style="font-size:12px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Completion Data</div>
+            <div style="font-size:12px;">Type: <strong>${t.completionData.type === 'civil' ? 'Civil Design' : 'Structural Design'}</strong></div>
+            ${t.completionData.type === 'civil'       ? `<div style="font-size:12px;">RCC: <strong>${APP.escapeHtml(t.completionData.rcc||'—')}</strong></div>` : ''}
+            ${t.completionData.type === 'structural'  ? `<div style="font-size:12px;">Tonnage: <strong>${APP.escapeHtml(t.completionData.tonnage||'—')} MT</strong></div>` : ''}
+          </div>` : ''}
+        ${t.pdfData ? `<a class="pdf-badge" style="margin-top:6px;" href="${t.pdfData}" download="${t.pdfName||'delivery.pdf'}">📄 Download PDF: ${APP.escapeHtml(t.pdfName||'delivery.pdf')}</a>` : ''}
+        ${canEdit ? `
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+            <label class="form-label" style="font-size:11px;">Update Status</label>
+            <select id="tdStatusSel" class="form-control" style="width:auto;">
+              <option value="To Do"       ${t.status==='To Do'?'selected':''}>To Do</option>
+              <option value="In Progress" ${t.status==='In Progress'?'selected':''}>In Progress</option>
+              <option value="Acceptance"  ${t.status==='Acceptance'?'selected':''}>Acceptance</option>
+              <option value="Done"        ${t.status==='Done'?'selected':''}>Done</option>
+            </select>
+          </div>` : ''}
+      </div>`;
+
+    // PDF upload section for assignees
+    const pdfSection = document.getElementById('tdPdfSection');
+    if (isAssignee) {
+      pdfSection.style.display = 'block';
+      document.getElementById('pdfUploadText').textContent = t.pdfData ? `✅ PDF attached: ${t.pdfName||'file.pdf'} — click to replace` : '📎 Click to attach PDF (max 1 MB)';
+      document.getElementById('pdfDropArea').className = t.pdfData ? 'pdf-upload-area has-file' : 'pdf-upload-area';
+    } else {
+      pdfSection.style.display = 'none';
+    }
+
+    // Completion section
+    const compSection = document.getElementById('tdCompletionSection');
+    if (isAssignee && !t.completionData) {
+      compSection.style.display = requireCompletion ? 'block' : 'block';
+      document.getElementById('cdType').value    = '';
+      document.getElementById('cdRcc').value     = '';
+      document.getElementById('cdTonnage').value = '';
+      document.getElementById('cdCivilRow').style.display      = 'none';
+      document.getElementById('cdStructuralRow').style.display = 'none';
+    } else {
+      compSection.style.display = 'none';
+    }
+
+    document.getElementById('tdSaveBtn').style.display = (isAssignee || canEdit) ? 'inline-flex' : 'none';
+    document.getElementById('taskDetailModal').classList.add('open');
+  }
+
+  function toggleCompletionFields() {
+    const type = document.getElementById('cdType').value;
+    document.getElementById('cdCivilRow').style.display      = type === 'civil'      ? 'block' : 'none';
+    document.getElementById('cdStructuralRow').style.display = type === 'structural' ? 'block' : 'none';
+  }
+
+  function onPdfSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      alert('PDF file must be under 1 MB.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingPdfData = e.target.result;
+      pendingPdfName = file.name;
+      document.getElementById('pdfUploadText').textContent = `✅ ${file.name} ready to save`;
+      document.getElementById('pdfDropArea').className = 'pdf-upload-area has-file';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveTaskDetail() {
+    const t     = APP.getTaskById(taskDetailId);
+    if (!t) return;
+    const updates = {};
+
+    // Status update
+    const statusSel = document.getElementById('tdStatusSel');
+    if (statusSel) updates.status = statusSel.value;
+
+    // PDF
+    if (pendingPdfData) { updates.pdfData = pendingPdfData; updates.pdfName = pendingPdfName; }
+
+    // Completion data (when moving to Done as assignee)
+    const compSection = document.getElementById('tdCompletionSection');
+    if (compSection.style.display !== 'none') {
+      const type = document.getElementById('cdType').value;
+      if (updates.status === 'Done' || t.status === 'Done') {
+        if (type) {
+          updates.completionData = {
+            type,
+            rcc:     type === 'civil'       ? document.getElementById('cdRcc').value.trim()     : null,
+            tonnage: type === 'structural'  ? document.getElementById('cdTonnage').value.trim() : null
+          };
+        }
+      }
+    }
+
+    APP.updateTask(taskDetailId, updates);
+    closeTaskDetailModal();
     renderTaskStats();
     renderTasks();
   }
 
-  // ── Task Modal ────────────────────────────────────────────────────
+  function closeTaskDetailModal() {
+    taskDetailId = null; pendingPdfData = null; pendingPdfName = null;
+    document.getElementById('taskDetailModal').classList.remove('open');
+    document.getElementById('pdfFileInput').value = '';
+  }
+
+  // ── Task Create/Edit Modal ────────────────────────────────────────
+  // L (HOD) and L1 (Manager) can pick any task due date.
+  // Everyone else is capped at the project due date.
+  function applyTaskDueDateMax() {
+    const input = document.getElementById('tDueDate');
+    const canOverride = currentUser.level === 'L' || currentUser.level === 'L0' || currentUser.level === 'L1';
+    if (!canOverride && project && project.dueDate) {
+      input.max = project.dueDate.split('T')[0];
+    } else {
+      input.removeAttribute('max');
+    }
+  }
+
   function openNewTaskModal() {
     document.getElementById('taskModalTitle').textContent = 'Add Task';
     document.getElementById('tTitle').value = '';
@@ -480,7 +723,9 @@
     document.getElementById('tPriority').value = 'Medium';
     document.getElementById('tDueDate').value  = '';
     document.getElementById('editTaskId').value = '';
-    populateTaskAssignee(null);
+    document.getElementById('tSelfAssign').checked = false;
+    applyTaskDueDateMax();
+    populateAssigneeCheckboxes([]);
     document.getElementById('taskModal').classList.add('open');
   }
 
@@ -493,15 +738,33 @@
     document.getElementById('tPriority').value = t.priority;
     document.getElementById('tDueDate').value  = t.dueDate ? t.dueDate.split('T')[0] : '';
     document.getElementById('editTaskId').value = taskId;
-    populateTaskAssignee(t.assigneeId);
+    const assigneeIds = APP.getTaskAssigneeIds(t);
+    document.getElementById('tSelfAssign').checked = assigneeIds.includes(currentUser.id);
+    applyTaskDueDateMax();
+    populateAssigneeCheckboxes(assigneeIds);
     document.getElementById('taskModal').classList.add('open');
   }
 
-  function populateTaskAssignee(selectedId) {
+  function populateAssigneeCheckboxes(selectedIds) {
     const users = APP.getAssignableUsers(currentUser);
-    document.getElementById('tAssignee').innerHTML =
-      '<option value="">— Unassigned —</option>' +
-      users.map(u => `<option value="${u.id}" ${u.id === selectedId ? 'selected' : ''}>${APP.escapeHtml(u.name)} — ${APP.escapeHtml(u.designation)}</option>`).join('');
+    const list  = document.getElementById('tAssigneeList');
+    if (users.length === 0) {
+      list.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:8px;">No team members to assign (below your level in your group).</p>';
+      return;
+    }
+    list.innerHTML = users.map(u => `
+      <div class="assignee-check-item">
+        <input type="checkbox" id="ac_${u.id}" value="${u.id}" ${selectedIds.includes(u.id) ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--purple);flex-shrink:0;">
+        <label for="ac_${u.id}" style="font-size:13px;">
+          <strong>${APP.escapeHtml(u.name)}</strong>
+          <span style="color:var(--text-muted);"> — ${APP.escapeHtml(u.designation)}</span>
+          ${u.group ? `<span style="font-size:10px;color:var(--purple-light);"> (${u.group})</span>` : ''}
+        </label>
+      </div>`).join('');
+  }
+
+  function toggleSelfAssign() {
+    // Just a visual toggle — actual collection happens on save
   }
 
   function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
@@ -511,13 +774,28 @@
     const desc     = document.getElementById('tDesc').value.trim();
     const priority = document.getElementById('tPriority').value;
     const dueDate  = document.getElementById('tDueDate').value;
-    const assignee = document.getElementById('tAssignee').value;
     const editId   = document.getElementById('editTaskId').value;
+
     if (!title) return APP.showAlert('taskModalAlert', 'Task title is required.');
+
+    // Enforce due date cap for non-L/L1 users
+    const canOverrideDue = currentUser.level === 'L' || currentUser.level === 'L0' || currentUser.level === 'L1';
+    if (!canOverrideDue && dueDate && project && project.dueDate) {
+      if (dueDate > project.dueDate.split('T')[0]) {
+        return APP.showAlert('taskModalAlert', `Due date cannot be after the project due date (${APP.formatDate(project.dueDate)}).`);
+      }
+    }
+
+    // Collect assignee IDs from checkboxes + self-assign
+    const checked = [...document.querySelectorAll('#tAssigneeList input[type=checkbox]:checked')].map(cb => cb.value);
+    if (document.getElementById('tSelfAssign').checked && !checked.includes(currentUser.id)) {
+      checked.unshift(currentUser.id);
+    }
+
     if (editId) {
-      APP.updateTask(editId, { title, description: desc, priority, dueDate: dueDate || null, assigneeId: assignee || null });
+      APP.updateTask(editId, { title, description: desc, priority, dueDate: dueDate || null, assigneeIds: checked, assigneeId: checked[0] || null });
     } else {
-      APP.createTask({ projectId, title, description: desc, priority, dueDate: dueDate || null, assigneeId: assignee || null }, currentUser.id);
+      APP.createTask({ projectId, title, description: desc, priority, dueDate: dueDate || null, assigneeIds: checked, assigneeId: checked[0] || null }, currentUser.id);
     }
     closeTaskModal();
     renderTaskStats();
@@ -531,13 +809,8 @@
     document.getElementById('epPriority').value = project.priority;
     document.getElementById('epStatus').value   = project.status || 'Not Started';
     document.getElementById('epDueDate').value  = project.dueDate ? project.dueDate.split('T')[0] : '';
-    const users = APP.getUsers().filter(u => u.id !== currentUser.id);
-    document.getElementById('epAssignee').innerHTML =
-      '<option value="">— Unassigned —</option>' +
-      users.map(u => `<option value="${u.id}" ${u.id === project.assigneeId ? 'selected' : ''}>${APP.escapeHtml(u.name)} — ${APP.escapeHtml(u.designation)}</option>`).join('');
     document.getElementById('editProjectModal').classList.add('open');
   }
-
   function closeEditProjectModal() { document.getElementById('editProjectModal').classList.remove('open'); }
 
   function saveEditProject() {
@@ -546,9 +819,8 @@
     const priority = document.getElementById('epPriority').value;
     const status   = document.getElementById('epStatus').value;
     const dueDate  = document.getElementById('epDueDate').value;
-    const assignee = document.getElementById('epAssignee').value;
     if (!title) return APP.showAlert('editProjAlert', 'Project title is required.');
-    project = APP.updateProject(projectId, { title, description: desc, priority, status, dueDate, assigneeId: assignee || null });
+    project = APP.updateProject(projectId, { title, description: desc, priority, status, dueDate });
     document.getElementById('topbarTitle').textContent = project.title;
     closeEditProjectModal();
     renderProjectHeader();
@@ -562,45 +834,28 @@
     document.getElementById('deleteTaskName').textContent = name;
     document.getElementById('deleteTaskModal').classList.add('open');
   }
-  function closeDeleteTaskModal() {
-    deleteTaskTarget = null;
-    document.getElementById('deleteTaskModal').classList.remove('open');
-  }
+  function closeDeleteTaskModal() { deleteTaskTarget = null; document.getElementById('deleteTaskModal').classList.remove('open'); }
   function confirmDeleteTask() {
-    if (deleteTaskTarget) {
-      APP.deleteTask(deleteTaskTarget);
-      closeDeleteTaskModal();
-      renderTaskStats();
-      renderTasks();
-    }
+    if (deleteTaskTarget) { APP.deleteTask(deleteTaskTarget); closeDeleteTaskModal(); renderTaskStats(); renderTasks(); }
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // ── QC SIGN-OFF / CHECKLISTS ───────────────────────────────────────
-  // ══════════════════════════════════════════════════════════════════
-
-  function renderChecklists() {
-    const checklists = APP.getProjectChecklists(projectId);
-    const container  = document.getElementById('checklistList');
-
-    if (checklists.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🔏</div>
-          <h3>No sign-off checklists yet</h3>
-          <p>${APP.isAdmin(currentUser) ? 'Create a checklist for drawings ready for QC review.' : 'No checklists have been created for this project yet.'}</p>
-        </div>`;
+  // ── CONCURRENCE ──────────────────────────────────────────────────
+  function renderConcurrences() {
+    const list      = APP.getProjectConcurrences(projectId);
+    const container = document.getElementById('concurrenceList');
+    if (list.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔏</div><h3>No concurrences yet</h3><p>${APP.canCreateConcurrence(currentUser) ? 'Create one for drawings ready for sign-off.' : 'No concurrences created for this project yet.'}</p></div>`;
       return;
     }
-
-    container.innerHTML = checklists.map(cl => renderChecklist(cl)).join('');
+    container.innerHTML = list.map(cl => renderConcurrence(cl)).join('');
   }
 
-  function renderChecklist(cl) {
-    const allSigned = APP.checklistAllSigned(cl);
-    const myReviewer = cl.reviewers.find(r => r.userId === currentUser.id);
-    const canHodSign = APP.isAdmin(currentUser) && allSigned && !cl.hodSignOff.signed;
-    const canSendToClient = APP.isAdmin(currentUser) && cl.hodSignOff.signed && !cl.sentToClient;
+  function renderConcurrence(cl) {
+    const allSigned    = APP.concurrenceAllSigned(cl);
+    const canHodSign   = APP.isAdmin(currentUser) && allSigned && !cl.hodSignOff.signed;
+    const canSend      = APP.isAdmin(currentUser) && cl.hodSignOff.signed && !cl.sentToClient;
+    const canDelete    = APP.canCreateConcurrence(currentUser) && !cl.sentToClient;
 
     const reviewersHtml = cl.reviewers.map(r => `
       <div class="reviewer-row ${r.signed ? 'signed' : ''}">
@@ -611,126 +866,195 @@
         </div>
         ${r.signed
           ? `<div class="rv-date">Signed ${APP.formatDate(r.signedAt)}</div>`
-          : (r.userId === currentUser.id && !r.signed
-            ? `<button class="btn btn-green btn-sm" onclick="signChecklist('${cl.id}')">Sign</button>`
+          : (r.userId === currentUser.id
+            ? `<button class="btn btn-green btn-sm" onclick="signConcurrence('${cl.id}')">Sign</button>`
             : '<span style="font-size:11px;color:var(--text-muted);">Pending</span>'
           )
         }
       </div>`).join('');
 
     return `
-      <div class="checklist-card ${cl.sentToClient ? 'sent' : ''}">
+      <div class="concurrence-card ${cl.sentToClient ? 'sent' : ''}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div>
-            <div class="checklist-title">📄 ${APP.escapeHtml(cl.drawingTitle)}</div>
-            ${cl.description ? `<div class="checklist-desc">${APP.escapeHtml(cl.description)}</div>` : ''}
+            <div class="concurrence-title">📄 ${APP.escapeHtml(cl.drawingTitle)}</div>
+            ${cl.description ? `<div class="concurrence-desc">${APP.escapeHtml(cl.description)}</div>` : ''}
+            <div style="font-size:11px;color:var(--text-muted);">Created by ${APP.getUserName(cl.createdBy)} · ${APP.formatDate(cl.createdAt)}</div>
           </div>
-          <div style="display:flex;gap:6px;flex-shrink:0;">
-            ${APP.isAdmin(currentUser) && !cl.sentToClient ? `<button class="btn btn-danger btn-sm" onclick="deleteChecklist('${cl.id}')">🗑️</button>` : ''}
-          </div>
+          ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteConcurrence('${cl.id}')">🗑️</button>` : ''}
         </div>
-
         <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
           Reviewers (${cl.reviewers.filter(r=>r.signed).length}/${cl.reviewers.length} signed)
         </div>
         ${reviewersHtml}
-
         <div class="hod-signoff">
           <div style="font-size:12px;font-weight:600;color:var(--purple-dark);margin-bottom:6px;">HOD Final Sign-off</div>
           ${cl.hodSignOff.signed
             ? `<div style="color:var(--green-dark);font-size:13px;">✅ Signed by ${APP.getUserName(cl.hodSignOff.signedBy)} on ${APP.formatDate(cl.hodSignOff.signedAt)}</div>`
             : (canHodSign
-              ? `<button class="btn btn-primary btn-sm" onclick="hodSign('${cl.id}')">✍️ Sign & Approve</button>
+              ? `<button class="btn btn-primary btn-sm" onclick="hodSignConcurrence('${cl.id}')">✍️ Sign &amp; Approve</button>
                  <span style="font-size:11px;color:var(--green-dark);margin-left:8px;">All reviewers have signed</span>`
               : `<span style="font-size:12px;color:var(--text-muted);">${allSigned ? 'Ready for HOD sign-off' : `Waiting for ${cl.reviewers.filter(r=>!r.signed).length} reviewer(s)`}</span>`
             )
           }
         </div>
-
         ${cl.sentToClient
-          ? `<div class="sent-banner">✈️ Drawing sent to client on ${APP.formatDate(cl.sentAt)}</div>`
-          : (canSendToClient
-            ? `<button class="btn btn-green btn-sm" style="margin-top:10px;" onclick="sendToClient('${cl.id}')">✈️ Mark as Sent to Client</button>`
-            : ''
-          )
+          ? `<div class="sent-banner">✈️ Sent to client on ${APP.formatDate(cl.sentAt)}</div>`
+          : (canSend ? `<button class="btn btn-green btn-sm" style="margin-top:10px;" onclick="sendToClient('${cl.id}')">✈️ Mark as Sent to Client</button>` : '')
         }
       </div>`;
   }
 
-  function signChecklist(id) {
-    APP.signChecklist(id, currentUser.id);
-    renderChecklists();
-  }
+  function signConcurrence(id)     { APP.signConcurrence(id, currentUser.id); renderConcurrences(); renderTaskStats(); renderTasks(); }
+  function hodSignConcurrence(id)  { APP.hodSignConcurrence(id, currentUser.id); renderConcurrences(); }
+  function sendToClient(id)        { if (confirm('Mark as sent to client?')) { APP.markSentToClient(id); renderConcurrences(); } }
+  function deleteConcurrence(id)   { if (confirm('Delete this concurrence and its sign-off tasks?')) { APP.deleteConcurrence(id); renderConcurrences(); renderTaskStats(); renderTasks(); } }
 
-  function hodSign(id) {
-    APP.hodSignChecklist(id, currentUser.id);
-    renderChecklists();
-  }
-
-  function sendToClient(id) {
-    if (confirm('Mark this drawing as sent to client?')) {
-      APP.markSentToClient(id);
-      renderChecklists();
-    }
-  }
-
-  function deleteChecklist(id) {
-    if (confirm('Delete this sign-off checklist?')) {
-      APP.deleteChecklist(id);
-      renderChecklists();
-    }
-  }
-
-  // ── New Checklist Modal ───────────────────────────────────────────
-  function openNewChecklistModal() {
+  function openNewConcurrenceModal() {
     document.getElementById('clTitle').value = '';
     document.getElementById('clDesc').value  = '';
+    populateConcurrenceReviewerList([]);
+    document.getElementById('concurrenceModal').classList.add('open');
+  }
+  function closeConcurrenceModal() { document.getElementById('concurrenceModal').classList.remove('open'); }
+
+  function populateConcurrenceReviewerList(preChecked) {
     const users = APP.getUsers().filter(u => u.id !== currentUser.id);
-    document.getElementById('reviewerCheckboxes').innerHTML =
-      users.length === 0
-        ? '<p style="color:var(--text-muted);font-size:12px;">No other users registered yet.</p>'
-        : users.map(u => `
-          <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.1s;" onmouseover="this.style.background='#f5f3fa'" onmouseout="this.style.background=''">
-            <input type="checkbox" value="${u.id}" data-name="${APP.escapeHtml(u.name)}" data-desig="${APP.escapeHtml(u.designation)}" style="width:16px;height:16px;accent-color:var(--purple);">
-            <div>
-              <div style="font-size:13px;font-weight:500;">${APP.escapeHtml(u.name)}</div>
-              <div style="font-size:11px;color:var(--text-muted);">${APP.escapeHtml(u.designation)}</div>
-            </div>
-          </label>`).join('');
-    document.getElementById('checklistModal').classList.add('open');
+    document.getElementById('reviewerCheckboxes').innerHTML = users.length === 0
+      ? '<p style="font-size:12px;color:var(--text-muted);">No other users yet.</p>'
+      : users.map(u => `
+          <div class="assignee-check-item">
+            <input type="checkbox" id="rv_${u.id}" value="${u.id}" data-name="${APP.escapeHtml(u.name)}" data-desig="${APP.escapeHtml(u.designation)}" ${preChecked.includes(u.id)?'checked':''} style="width:16px;height:16px;accent-color:var(--purple);flex-shrink:0;">
+            <label for="rv_${u.id}" style="font-size:13px;">
+              <strong>${APP.escapeHtml(u.name)}</strong>
+              <span style="color:var(--text-muted);"> — ${APP.escapeHtml(u.designation)}</span>
+            </label>
+          </div>`).join('');
   }
 
-  function closeChecklistModal() { document.getElementById('checklistModal').classList.remove('open'); }
+  function autoPopulateReviewers() {
+    const participants = APP.getProjectParticipants(projectId);
+    const ids = participants.map(u => u.id);
+    populateConcurrenceReviewerList(ids);
+    if (ids.length === 0) APP.showAlert('clAlert', 'No task participants found yet. Add tasks first.');
+  }
 
-  function saveChecklist() {
-    const title = document.getElementById('clTitle').value.trim();
-    const desc  = document.getElementById('clDesc').value.trim();
+  function saveConcurrence() {
+    const title   = document.getElementById('clTitle').value.trim();
+    const desc    = document.getElementById('clDesc').value.trim();
     if (!title) return APP.showAlert('clAlert', 'Drawing title is required.');
-
     const checked = [...document.querySelectorAll('#reviewerCheckboxes input[type=checkbox]:checked')];
     if (checked.length === 0) return APP.showAlert('clAlert', 'Select at least one reviewer.');
-
     const reviewers = checked.map(cb => ({
-      userId: cb.value,
-      name: cb.dataset.name,
-      designation: cb.dataset.desig,
-      signed: false,
-      signedAt: null
+      userId: cb.value, name: cb.dataset.name, designation: cb.dataset.desig,
+      signed: false, signedAt: null
     }));
-
-    APP.createChecklist({ projectId, drawingTitle: title, description: desc, reviewers }, currentUser.id);
-    closeChecklistModal();
-    renderChecklists();
+    APP.createConcurrence({ projectId, drawingTitle: title, description: desc, reviewers }, currentUser.id);
+    closeConcurrenceModal();
+    renderConcurrences();
+    renderTaskStats();
+    renderTasks();
   }
 
-  // Close modals on overlay click
-  ['taskModal','editProjectModal','deleteTaskModal','checklistModal'].forEach(id => {
+  // ══════════════════════════════════════════════════════════════════
+  // ── SUBPROJECTS ──────────────────────────────────────────────────
+  function renderSubprojects() {
+    const subs      = APP.getSubprojects(projectId);
+    const container = document.getElementById('subprojectList');
+    if (subs.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><h3>No subprojects yet</h3><p>Break this project into smaller deliverables.</p></div>`;
+      return;
+    }
+    const allTasks = APP.getTasks();
+    container.innerHTML = subs.map(s => {
+      const tasks = allTasks.filter(t => t.projectId === s.id);
+      const done  = tasks.filter(t => t.status === 'Done').length;
+      const pct   = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+      const statusClass = (s.status||'Not Started').replace(/\s+/g,'').toLowerCase();
+      return `
+        <div class="sub-card" onclick="window.location.href='project.html?id=${s.id}'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-weight:600;font-size:14px;color:var(--text);">${APP.escapeHtml(s.title)}</div>
+              ${s.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${APP.escapeHtml(s.description)}</div>` : ''}
+            </div>
+            <span class="badge badge-${statusClass}" style="flex-shrink:0;">${s.status||'Not Started'}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+            📅 Due: ${APP.formatDate(s.dueDate)} &nbsp;·&nbsp; 📋 ${done}/${tasks.length} tasks &nbsp;·&nbsp; ${pct}% done
+          </div>
+          <div class="progress-bar" style="margin-top:6px;height:4px;">
+            <div class="progress-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--purple)'};"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function openNewSubprojectModal() {
+    document.getElementById('spTitle').value = '';
+    document.getElementById('spDesc').value  = '';
+    document.getElementById('spPriority').value = 'Medium';
+    document.getElementById('spDueDate').value  = '';
+    document.getElementById('subprojectModal').classList.add('open');
+  }
+  function closeSubprojectModal() { document.getElementById('subprojectModal').classList.remove('open'); }
+
+  function saveSubproject() {
+    const title    = document.getElementById('spTitle').value.trim();
+    const desc     = document.getElementById('spDesc').value.trim();
+    const priority = document.getElementById('spPriority').value;
+    const dueDate  = document.getElementById('spDueDate').value;
+    if (!title) return APP.showAlert('spAlert', 'Subproject title is required.');
+    APP.createProject({ title, description: desc, priority, dueDate: dueDate || null, parentProjectId: projectId }, currentUser.id);
+    closeSubprojectModal();
+    renderSubprojects();
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── NOTES ────────────────────────────────────────────────────────
+  function renderNotes() {
+    const notes     = APP.getProjectNotes(projectId);
+    const container = document.getElementById('notesList');
+    if (notes.length === 0) {
+      container.innerHTML = '<p style="font-size:13px;color:var(--text-muted);">No notes yet. Be the first to add one.</p>';
+      return;
+    }
+    container.innerHTML = notes.map(n => `
+      <div class="note-card">
+        <div class="note-meta">
+          ${APP.escapeHtml(APP.getUserName(n.createdBy))} · ${APP.formatDateTime(n.createdAt)}
+          ${(n.createdBy === currentUser.id || APP.isAdmin(currentUser))
+            ? `<button class="btn btn-ghost btn-sm" style="float:right;font-size:10px;padding:1px 6px;" onclick="deleteNote('${n.id}')">🗑️</button>` : ''}
+        </div>
+        <div class="note-text">${APP.escapeHtml(n.text)}</div>
+      </div>`).join('');
+  }
+
+  function addNote() {
+    const text = document.getElementById('newNoteText').value.trim();
+    if (!text) return;
+    APP.addNote(projectId, text, currentUser.id);
+    document.getElementById('newNoteText').value = '';
+    renderNotes();
+  }
+
+  function deleteNote(id) {
+    if (confirm('Delete this note?')) { APP.deleteNote(id); renderNotes(); }
+  }
+
+  // ── Close modals on overlay click ─────────────────────────────────
+  ['taskModal','taskDetailModal','editProjectModal','deleteTaskModal','concurrenceModal','subprojectModal'].forEach(id => {
     document.getElementById(id).addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
   });
 
   // Refresh on page visibility
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { renderTaskStats(); renderTasks(); if (currentTab === 'qc') renderChecklists(); }
+    if (!document.hidden) {
+      renderTaskStats(); renderTasks();
+      if (currentTab === 'concurrence') renderConcurrences();
+      if (currentTab === 'subprojects') renderSubprojects();
+      if (currentTab === 'notes')       renderNotes();
+    }
   });
 
   init();

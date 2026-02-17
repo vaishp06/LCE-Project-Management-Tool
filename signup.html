@@ -50,16 +50,17 @@
               <option value="Deputy General Manager">Deputy General Manager</option>
               <option value="Assistant General Manager">Assistant General Manager</option>
             </optgroup>
-            <optgroup label="── Manager (L1) ──">
+            <optgroup label="── Team Lead / Manager (L1) ──">
               <option value="Manager">Manager</option>
             </optgroup>
-            <optgroup label="── Deputy Manager (L2) ──">
+            <optgroup label="── Group Lead / Deputy Manager (L2) ──">
               <option value="Deputy Manager">Deputy Manager</option>
             </optgroup>
             <optgroup label="── Designer (L3) ──">
               <option value="Assistant Manager">Assistant Manager</option>
               <option value="GET">GET</option>
               <option value="Senior Executive Engineer">Senior Executive Engineer</option>
+              <option value="Senior Executive Engineer (BBS)">Senior Executive Engineer (BBS)</option>
               <option value="Senior Executive Engineer (Site)">Senior Executive Engineer (Site)</option>
             </optgroup>
             <optgroup label="── Civil Drafting (L4) ──">
@@ -81,6 +82,21 @@
           <label class="form-label">Grade</label>
           <input type="text" id="grade" class="form-control" placeholder="Auto-filled" readonly style="background:#f8f9fa;color:var(--text-muted);">
         </div>
+      </div>
+
+      <!-- Group selection — hidden for L/L0 (auto set to MANAGEMENT) -->
+      <div class="form-group" id="groupRow">
+        <label class="form-label">Team / Group *</label>
+        <select id="group" class="form-control" required>
+          <option value="">— Select your group —</option>
+          <option value="GROUP-1">Group 1 — Pune</option>
+          <option value="GROUP-2">Group 2 — Pune</option>
+          <option value="GROUP-3">Group 3 — Pune</option>
+          <option value="TASK-FORCE">BHQ Task Force</option>
+          <option value="SITE-HEDRI">Hedri Site Posting</option>
+          <option value="SITE-GHUGUS">Ghugus Site Posting</option>
+        </select>
+        <div class="form-hint">Your group determines which team members you can assign tasks to.</div>
       </div>
 
       <div class="form-group">
@@ -135,9 +151,24 @@
     if (APP.getCurrentUser()) window.location.href = 'dashboard.html';
 
     function onDesignationChange() {
-      const val = document.getElementById('designation').value;
+      const val   = document.getElementById('designation').value;
       const desig = APP.DESIGNATIONS.find(d => d.title === val);
       document.getElementById('grade').value = desig ? desig.grade : '';
+
+      const groupRow = document.getElementById('groupRow');
+      const groupSel = document.getElementById('group');
+
+      if (desig && (desig.level === 'L' || desig.level === 'L0' || desig.level === 'T1')) {
+        // Management / cross-group (T1): auto-set group and hide picker
+        groupSel.value = 'MANAGEMENT';
+        // Temporarily remove required so hidden field doesn't block submit
+        groupRow.style.display = 'none';
+        groupSel.required = false;
+      } else {
+        groupRow.style.display = 'block';
+        groupSel.required = true;
+        if (groupSel.value === 'MANAGEMENT') groupSel.value = '';
+      }
     }
 
     function pinNav(e, idx) {
@@ -154,7 +185,7 @@
       if (idx < 3) document.getElementById(ids[idx + 1]).focus();
     }
 
-    function getPin() { return ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join(''); }
+    function getPin()        { return ['p0','p1','p2','p3'].map(id => document.getElementById(id).value).join(''); }
     function getConfirmPin() { return ['cp0','cp1','cp2','cp3'].map(id => document.getElementById(id).value).join(''); }
 
     function handleSignup(e) {
@@ -167,11 +198,21 @@
       const pin   = getPin();
       const cpin  = getConfirmPin();
 
+      // Determine group
+      const desigObj = APP.DESIGNATIONS.find(d => d.title === desig);
+      let group = document.getElementById('group').value;
+      if (desigObj && (desigObj.level === 'L' || desigObj.level === 'L0' || desigObj.level === 'T1')) {
+        group = 'MANAGEMENT';
+      }
+
       if (!email.endsWith('@lloyds.in')) {
         return APP.showAlert('alertBox', 'Email must end with @lloyds.in. Only company emails are allowed.');
       }
       if (!desig) {
         return APP.showAlert('alertBox', 'Please select your designation.');
+      }
+      if (!group) {
+        return APP.showAlert('alertBox', 'Please select your team / group.');
       }
       if (!dept) {
         return APP.showAlert('alertBox', 'Please select your department.');
@@ -183,7 +224,7 @@
         return APP.showAlert('alertBox', 'Passcodes do not match. Please re-enter.');
       }
 
-      const result = APP.createUser({ name, empId, email, designation: desig, dept, passcode: pin });
+      const result = APP.createUser({ name, empId, email, designation: desig, dept, group, passcode: pin });
       if (result.error) {
         return APP.showAlert('alertBox', result.error);
       }

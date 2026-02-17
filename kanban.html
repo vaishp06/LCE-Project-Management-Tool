@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Kanban | LCE Project Hub</title>
+  <title>My Board | LCE Project Hub</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Extra column for Acceptance */
     .kanban-col.col-acceptance .kanban-col-header { border-color: var(--purple-light); }
     .col-count.acceptance { background: rgba(102,51,170,0.15); color: var(--purple); }
-    .kanban-creator-badge {
-      font-size: 9px; background: #FFF3E0; color: var(--warning);
-      padding: 1px 5px; border-radius: 4px; font-weight: 600;
-      display: inline-block; margin-left: 4px; vertical-align: middle;
-      text-transform: uppercase; letter-spacing: 0.4px;
-    }
+    .kanban-creator-badge { font-size:9px; background:#FFF3E0; color:var(--warning); padding:1px 5px; border-radius:4px; font-weight:600; display:inline-block; margin-left:4px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.4px; }
+    .kanban-card { cursor:pointer; }
+    .kanban-card:hover { box-shadow: 0 4px 16px rgba(102,51,170,0.18); }
+    /* PDF and completion indicators */
+    .card-pdf-chip { font-size:9px; background:#E3F2FD; color:#1565C0; padding:1px 5px; border-radius:3px; font-weight:600; display:inline-block; margin-top:2px; }
+    .card-completion-chip { font-size:9px; background:#E8F5E9; color:#2E7D32; padding:1px 5px; border-radius:3px; font-weight:600; display:inline-block; margin-top:2px; }
+    /* Task detail modal inside board */
+    .pdf-upload-area { border:2px dashed var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; transition:border-color 0.15s; }
+    .pdf-upload-area:hover { border-color:var(--purple); }
+    .pdf-upload-area.has-file { border-color:var(--green); background:var(--green-pale); }
+    .assignee-pill { display:inline-flex; align-items:center; gap:4px; background:var(--purple-pale); color:var(--purple-dark); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500; margin:1px 2px; }
   </style>
 </head>
 <body>
@@ -32,32 +36,25 @@
       <div class="user-desig" id="userDesig"></div>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" href="dashboard.html">
-        <span class="nav-icon">🏠</span><span>Dashboard</span>
-      </a>
-      <a class="nav-item active" href="kanban.html">
-        <span class="nav-icon">📊</span><span>My Kanban</span>
-      </a>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a class="nav-item active" href="kanban.html"><span class="nav-icon">📊</span><span>My Board</span></a>
     </nav>
     <div class="sidebar-footer">
-      <button class="nav-item" onclick="APP.logout()">
-        <span class="nav-icon">🚪</span><span>Logout</span>
-      </button>
+      <button class="nav-item" onclick="APP.logout()"><span class="nav-icon">🚪</span><span>Logout</span></button>
     </div>
   </aside>
 
   <!-- Main -->
   <div class="main-content">
     <div class="topbar">
-      <span class="topbar-title">My Kanban Board</span>
+      <span class="topbar-title">My Board</span>
       <span id="userBadge" style="font-size:12px;color:var(--text-muted);"></span>
     </div>
 
     <div class="page-content">
-
       <div class="page-header">
         <div>
-          <h2>Personal Kanban Board</h2>
+          <h2>My Board</h2>
           <p id="taskCountLine" style="color:var(--text-muted);font-size:13px;margin-top:3px;"></p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -75,20 +72,19 @@
       <!-- Legend -->
       <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
         <span style="font-size:12px;color:var(--text-muted);">
-          <span style="display:inline-block;width:10px;height:10px;background:var(--purple);border-radius:2px;margin-right:4px;"></span>
-          Assigned to me
+          <span style="display:inline-block;width:10px;height:10px;background:var(--purple);border-radius:2px;margin-right:4px;"></span>Assigned to me
         </span>
         <span style="font-size:12px;color:var(--text-muted);">
-          <span class="kanban-creator-badge">Created</span>
-          Tasks I created (assigned to others)
+          <span class="kanban-creator-badge">Created</span> Tasks I created (assigned to others)
         </span>
+        <span style="font-size:12px;color:var(--text-muted);">Click any card to view / edit details.</span>
       </div>
 
       <!-- Kanban Board -->
       <div class="kanban-board" id="kanbanBoard">
 
         <!-- To Do -->
-        <div class="kanban-col col-todo" id="col-todo" data-status="To Do"
+        <div class="kanban-col col-todo" id="col-todo"
              ondragover="onDragOver(event)" ondrop="onDrop(event,'To Do')" ondragleave="onDragLeave(event)">
           <div class="kanban-col-header">
             <span class="col-title">📋 To Do</span>
@@ -98,7 +94,7 @@
         </div>
 
         <!-- In Progress -->
-        <div class="kanban-col col-inprogress" id="col-inprogress" data-status="In Progress"
+        <div class="kanban-col col-inprogress" id="col-inprogress"
              ondragover="onDragOver(event)" ondrop="onDrop(event,'In Progress')" ondragleave="onDragLeave(event)">
           <div class="kanban-col-header">
             <span class="col-title">⚙️ In Progress</span>
@@ -108,7 +104,7 @@
         </div>
 
         <!-- Acceptance -->
-        <div class="kanban-col col-acceptance" id="col-acceptance" data-status="Acceptance"
+        <div class="kanban-col col-acceptance" id="col-acceptance"
              ondragover="onDragOver(event)" ondrop="onDrop(event,'Acceptance')" ondragleave="onDragLeave(event)">
           <div class="kanban-col-header">
             <span class="col-title">🔍 Acceptance</span>
@@ -118,7 +114,7 @@
         </div>
 
         <!-- Done -->
-        <div class="kanban-col col-done" id="col-done" data-status="Done"
+        <div class="kanban-col col-done" id="col-done"
              ondragover="onDragOver(event)" ondrop="onDrop(event,'Done')" ondragleave="onDragLeave(event)">
           <div class="kanban-col-header">
             <span class="col-title">✅ Done</span>
@@ -132,20 +128,64 @@
   </div>
 </div>
 
+<!-- ── Task Detail Modal ── -->
+<div class="modal-overlay" id="taskDetailModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3 id="tdTitle">Task Detail</h3>
+      <button class="modal-close" onclick="closeTaskDetail()">×</button>
+    </div>
+    <div id="tdBody"></div>
+    <!-- PDF upload (assignees only) -->
+    <div id="tdPdfSection" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <label class="form-label">Upload Deliverable PDF</label>
+      <div class="pdf-upload-area" id="pdfDropArea" onclick="document.getElementById('pdfFileInput').click()">
+        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none;" onchange="onPdfSelected(event)">
+        <div id="pdfUploadText">📎 Click to attach PDF (max 1 MB)</div>
+      </div>
+    </div>
+    <!-- Completion details (assignees, when Done) -->
+    <div id="tdCompletionSection" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <label class="form-label">Completion Details</label>
+      <div class="form-group" style="margin-top:6px;">
+        <label class="form-label" style="font-size:11px;">Drawing Type</label>
+        <select id="cdType" class="form-control" onchange="toggleCompletionFields()">
+          <option value="">— Select —</option>
+          <option value="civil">Civil Design</option>
+          <option value="structural">Structural Design</option>
+        </select>
+      </div>
+      <div id="cdCivilRow" style="display:none;" class="form-group">
+        <label class="form-label" style="font-size:11px;">RCC Details</label>
+        <input type="text" id="cdRcc" class="form-control" placeholder="e.g. M25 grade, 120 MT">
+      </div>
+      <div id="cdStructuralRow" style="display:none;" class="form-group">
+        <label class="form-label" style="font-size:11px;">Tonnage (MT)</label>
+        <input type="text" id="cdTonnage" class="form-control" placeholder="e.g. 45.5 MT">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTaskDetail()">Close</button>
+      <button id="tdSaveBtn" class="btn btn-primary" onclick="saveTaskDetail()" style="display:none;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 <script>
-  let currentUser = null;
-  let dragTaskId  = null;
+  let currentUser  = null;
+  let dragTaskId   = null;
+  let detailTaskId = null;
+  let pendingPdf   = null;
+  let pendingPdfName = null;
 
   function init() {
     currentUser = APP.requireAuth();
     if (!currentUser) return;
-
     document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
     document.getElementById('userName').textContent   = currentUser.name;
     document.getElementById('userDesig').textContent  = currentUser.designation;
     document.getElementById('userBadge').textContent  = currentUser.designation;
-
     populateProjectFilter();
     renderBoard();
   }
@@ -163,11 +203,9 @@
     const filterProject = document.getElementById('projectFilter').value;
     const showCreated   = document.getElementById('showCreated').checked;
 
-    // Tasks assigned to me
-    const assigned = APP.getTasks().filter(t => t.assigneeId === currentUser.id);
-    // Tasks created by me for others (not assigned to me)
+    const assigned = APP.getTasks().filter(t => APP.isTaskAssignedTo(t, currentUser.id));
     const created  = showCreated
-      ? APP.getTasks().filter(t => t.createdBy === currentUser.id && t.assigneeId !== currentUser.id)
+      ? APP.getTasks().filter(t => t.createdBy === currentUser.id && !APP.isTaskAssignedTo(t, currentUser.id))
       : [];
 
     let tasks = [...assigned, ...created];
@@ -196,27 +234,32 @@
       return `<div style="text-align:center;padding:20px 12px;color:var(--text-muted);font-size:12px;">Drop tasks here</div>`;
     }
     return tasks.map(t => {
-      const project = APP.getProjectById(t.projectId);
-      const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
-      const isCreatedByMe = t.createdBy === currentUser.id && t.assigneeId !== currentUser.id;
-      const assigneeName  = t.assigneeId ? APP.getUserName(t.assigneeId) : '—';
+      const project     = APP.getProjectById(t.projectId);
+      const overdue     = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done';
+      const isCreatedByMe = t.createdBy === currentUser.id && !APP.isTaskAssignedTo(t, currentUser.id);
+      const assigneeNames = APP.getTaskAssigneeNames(t);
+      const isConcTask  = t.isConcurrenceTask;
       return `
         <div class="kanban-card priority-${t.priority}"
              draggable="true" data-task-id="${t.id}"
              ondragstart="onDragStart(event,'${t.id}')"
-             ondragend="onDragEnd(event)">
+             ondragend="onDragEnd(event)"
+             onclick="openTaskDetail('${t.id}')">
           <div class="kanban-card-title">
             ${APP.escapeHtml(t.title)}
             ${isCreatedByMe ? '<span class="kanban-creator-badge">Created</span>' : ''}
+            ${isConcTask ? '<span style="font-size:9px;background:#F3EEF9;color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:600;">🔏</span>' : ''}
           </div>
           ${t.description ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${APP.escapeHtml(t.description.substring(0, 80))}${t.description.length > 80 ? '...' : ''}</div>` : ''}
           <div class="kanban-card-meta">
             <span class="badge badge-${(t.priority||'medium').toLowerCase()}" style="font-size:10px;">${t.priority}</span>
-            ${isCreatedByMe ? `<span style="font-size:10px;color:var(--text-muted);">→ ${APP.escapeHtml(assigneeName)}</span>` : ''}
+            ${isCreatedByMe ? `<span style="font-size:10px;color:var(--text-muted);">→ ${APP.escapeHtml(assigneeNames.join(', '))}</span>` : ''}
             ${t.dueDate ? `<span style="${overdue?'color:var(--danger);font-weight:600;':''}font-size:10px;">📅 ${APP.formatDate(t.dueDate)}${overdue?' ⚠️':''}</span>` : ''}
           </div>
+          ${t.pdfData ? '<span class="card-pdf-chip">📄 PDF</span>' : ''}
+          ${t.completionData ? `<span class="card-completion-chip">${t.completionData.type === 'civil' ? 'RCC' : 'Tonnage'}</span>` : ''}
           ${project ? `<div class="kanban-card-project">📁 ${APP.escapeHtml(project.title)}</div>` : ''}
-          <div style="margin-top:8px;display:flex;gap:3px;flex-wrap:wrap;">
+          <div style="margin-top:8px;display:flex;gap:3px;flex-wrap:wrap;" onclick="event.stopPropagation()">
             <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','To Do')">To Do</button>
             <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="quickMove('${t.id}','In Progress')">In Prog.</button>
             <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;color:var(--purple);border-color:var(--purple-light);" onclick="quickMove('${t.id}','Acceptance')">Acceptance</button>
@@ -227,8 +270,139 @@
   }
 
   function quickMove(taskId, status) {
+    if (status === 'Done') {
+      const task = APP.getTaskById(taskId);
+      if (APP.isTaskAssignedTo(task, currentUser.id)) {
+        openTaskDetail(taskId, true);
+        return;
+      }
+    }
     APP.updateTask(taskId, { status });
     renderBoard();
+  }
+
+  // ── Task Detail Modal ─────────────────────────────────────────────
+  function openTaskDetail(taskId, requireCompletion) {
+    const t = APP.getTaskById(taskId);
+    if (!t) return;
+    detailTaskId = taskId;
+    pendingPdf = null; pendingPdfName = null;
+
+    document.getElementById('tdTitle').textContent = t.title;
+    const isAssignee    = APP.isTaskAssignedTo(t, currentUser.id);
+    const canEdit       = APP.canCreateTasks(currentUser) || isAssignee;
+    const assigneeNames = APP.getTaskAssigneeNames(t);
+    const proj          = APP.getProjectById(t.projectId);
+
+    document.getElementById('tdBody').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${t.description ? `<p style="font-size:13px;">${APP.escapeHtml(t.description)}</p>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;">
+          <span class="badge badge-${t.status.replace(/\s+/g,'').toLowerCase()}">${t.status}</span>
+          <span class="badge badge-${(t.priority||'medium').toLowerCase()}">${t.priority}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">
+          <div>📁 Project: <strong>${proj ? APP.escapeHtml(proj.title) : '—'}</strong></div>
+          <div>👤 Assignee(s): <strong>${assigneeNames.join(', ')}</strong></div>
+          ${t.dueDate ? `<div>📅 Due: <strong>${APP.formatDate(t.dueDate)}</strong></div>` : ''}
+          <div>🕐 Created: ${APP.formatDateTime(t.createdAt)} by ${APP.getUserName(t.createdBy)}</div>
+        </div>
+        ${t.completionData ? `
+          <div style="margin-top:8px;padding:10px;background:var(--green-pale);border-radius:var(--radius);">
+            <div style="font-size:12px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Completion Data</div>
+            <div style="font-size:12px;">Type: <strong>${t.completionData.type === 'civil' ? 'Civil Design' : 'Structural Design'}</strong></div>
+            ${t.completionData.type === 'civil'      ? `<div style="font-size:12px;">RCC: <strong>${APP.escapeHtml(t.completionData.rcc||'—')}</strong></div>` : ''}
+            ${t.completionData.type === 'structural' ? `<div style="font-size:12px;">Tonnage: <strong>${APP.escapeHtml(t.completionData.tonnage||'—')} MT</strong></div>` : ''}
+          </div>` : ''}
+        ${t.pdfData ? `<a class="pdf-badge" style="margin-top:6px;" href="${t.pdfData}" download="${t.pdfName||'delivery.pdf'}">📄 Download PDF: ${APP.escapeHtml(t.pdfName||'delivery.pdf')}</a>` : ''}
+        ${canEdit ? `
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+            <label class="form-label" style="font-size:11px;">Update Status</label>
+            <select id="tdStatusSel" class="form-control" style="width:auto;">
+              <option value="To Do"       ${t.status==='To Do'?'selected':''}>To Do</option>
+              <option value="In Progress" ${t.status==='In Progress'?'selected':''}>In Progress</option>
+              <option value="Acceptance"  ${t.status==='Acceptance'?'selected':''}>Acceptance</option>
+              <option value="Done"        ${t.status==='Done'?'selected':''}>Done</option>
+            </select>
+          </div>` : ''}
+      </div>`;
+
+    // PDF section for assignees
+    const pdfSec = document.getElementById('tdPdfSection');
+    if (isAssignee) {
+      pdfSec.style.display = 'block';
+      document.getElementById('pdfUploadText').textContent = t.pdfData
+        ? `✅ PDF attached: ${t.pdfName||'file.pdf'} — click to replace`
+        : '📎 Click to attach PDF (max 1 MB)';
+      document.getElementById('pdfDropArea').className = t.pdfData ? 'pdf-upload-area has-file' : 'pdf-upload-area';
+    } else {
+      pdfSec.style.display = 'none';
+    }
+
+    // Completion section
+    const compSec = document.getElementById('tdCompletionSection');
+    if (isAssignee && !t.completionData) {
+      compSec.style.display = 'block';
+      document.getElementById('cdType').value    = '';
+      document.getElementById('cdRcc').value     = '';
+      document.getElementById('cdTonnage').value = '';
+      document.getElementById('cdCivilRow').style.display      = 'none';
+      document.getElementById('cdStructuralRow').style.display = 'none';
+    } else {
+      compSec.style.display = 'none';
+    }
+
+    document.getElementById('tdSaveBtn').style.display = (isAssignee || canEdit) ? 'inline-flex' : 'none';
+    document.getElementById('taskDetailModal').classList.add('open');
+  }
+
+  function toggleCompletionFields() {
+    const type = document.getElementById('cdType').value;
+    document.getElementById('cdCivilRow').style.display      = type === 'civil'      ? 'block' : 'none';
+    document.getElementById('cdStructuralRow').style.display = type === 'structural' ? 'block' : 'none';
+  }
+
+  function onPdfSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) { alert('PDF must be under 1 MB.'); event.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingPdf     = e.target.result;
+      pendingPdfName = file.name;
+      document.getElementById('pdfUploadText').textContent = `✅ ${file.name} ready to save`;
+      document.getElementById('pdfDropArea').className = 'pdf-upload-area has-file';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveTaskDetail() {
+    const t = APP.getTaskById(detailTaskId);
+    if (!t) return;
+    const updates = {};
+    const statusSel = document.getElementById('tdStatusSel');
+    if (statusSel) updates.status = statusSel.value;
+    if (pendingPdf) { updates.pdfData = pendingPdf; updates.pdfName = pendingPdfName; }
+    const compSec = document.getElementById('tdCompletionSection');
+    if (compSec.style.display !== 'none') {
+      const type = document.getElementById('cdType').value;
+      if (type && (updates.status === 'Done' || t.status === 'Done')) {
+        updates.completionData = {
+          type,
+          rcc:     type === 'civil'      ? document.getElementById('cdRcc').value.trim()     : null,
+          tonnage: type === 'structural' ? document.getElementById('cdTonnage').value.trim() : null
+        };
+      }
+    }
+    APP.updateTask(detailTaskId, updates);
+    closeTaskDetail();
+    renderBoard();
+  }
+
+  function closeTaskDetail() {
+    detailTaskId = null; pendingPdf = null; pendingPdfName = null;
+    document.getElementById('taskDetailModal').classList.remove('open');
+    document.getElementById('pdfFileInput').value = '';
   }
 
   // ── Drag & Drop ───────────────────────────────────────────────────
@@ -248,22 +422,28 @@
     e.currentTarget.classList.add('drag-over');
   }
   function onDragLeave(e) {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
-      e.currentTarget.classList.remove('drag-over');
-    }
+    if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('drag-over');
   }
   function onDrop(e, status) {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
     if (dragTaskId) {
+      if (status === 'Done') {
+        const task = APP.getTaskById(dragTaskId);
+        if (APP.isTaskAssignedTo(task, currentUser.id)) {
+          openTaskDetail(dragTaskId, true);
+          dragTaskId = null;
+          return;
+        }
+      }
       APP.updateTask(dragTaskId, { status });
       dragTaskId = null;
       renderBoard();
     }
   }
 
-  // Refresh when tab becomes active
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderBoard(); });
+  document.getElementById('taskDetailModal').addEventListener('click', function(e) { if (e.target === this) closeTaskDetail(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { populateProjectFilter(); renderBoard(); } });
 
   init();
 </script>

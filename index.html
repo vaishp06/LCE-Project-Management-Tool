@@ -40,62 +40,45 @@
         </div>
       </div>
 
-      <!-- Live Projects Panel -->
+      <!-- Org info panel -->
       <div class="hero-visual">
         <div class="live-panel">
-          <div class="live-panel-title">
-            <div class="live-dot"></div>
-            Live Projects
+          <div class="live-panel-title" style="border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:10px;margin-bottom:12px;">
+            🏢 Civil &amp; Structural Dept
           </div>
-          <div id="liveProjectsContainer">
-            <div class="live-empty">No projects yet.<br>Login to create your first project.</div>
-          </div>
-          <div id="liveStats" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);display:none;">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);">
-              <span id="lsTotalProjects">0 projects</span>
-              <span id="lsTotalTasks">0 tasks</span>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:8px;">
+              <span style="font-size:22px;">📁</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">Role-Based Projects</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.55);">HOD creates, Managers track</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:8px;">
+              <span style="font-size:22px;">✅</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">Task Management</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.55);">With PDF deliverable upload</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:8px;">
+              <span style="font-size:22px;">🔏</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">Concurrence Sign-off</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.55);">L1 creates, HOD gives final sign-off</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.06);border-radius:8px;">
+              <span style="font-size:22px;">📊</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">My Board</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.55);">Personal Kanban for every team member</div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="features">
-    <div class="features-inner">
-      <h2>Everything your team needs</h2>
-      <p class="features-sub">Built for the Civil &amp; Structural workflow — from HOD to Drafting team</p>
-      <div class="features-grid">
-        <div class="feature-card">
-          <span class="feature-icon">📁</span>
-          <h3>Project Management</h3>
-          <p>HODs create and manage projects with priority, due dates, and assignees. Full lifecycle control.</p>
-        </div>
-        <div class="feature-card">
-          <span class="feature-icon">✅</span>
-          <h3>Task Delegation</h3>
-          <p>Managers break projects into tasks and assign them down the hierarchy — Deputy Managers, Designers, Drafting.</p>
-        </div>
-        <div class="feature-card">
-          <span class="feature-icon">📊</span>
-          <h3>Personal Kanban</h3>
-          <p>Every team member gets a personal Kanban board showing their tasks in To Do, In Progress, and Done columns.</p>
-        </div>
-        <div class="feature-card">
-          <span class="feature-icon">🔐</span>
-          <h3>Role-Based Access</h3>
-          <p>Access is automatically determined by your designation — from Deputy General Manager to Junior Engineers.</p>
-        </div>
-        <div class="feature-card">
-          <span class="feature-icon">🎯</span>
-          <h3>Priority Tracking</h3>
-          <p>Flag projects and tasks as High, Medium, or Low priority. Never lose sight of what matters most.</p>
-        </div>
-        <div class="feature-card">
-          <span class="feature-icon">📅</span>
-          <h3>Overdue Alerts</h3>
-          <p>Overdue projects and tasks are visually highlighted so nothing slips through the cracks.</p>
+          <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.4);text-align:center;">
+            lcecst@lloyds.in
+          </div>
         </div>
       </div>
     </div>
@@ -124,8 +107,8 @@
         </div>
         <div class="how-step">
           <div class="how-num green">4</div>
-          <h4>Track on Kanban</h4>
-          <p>Everyone tracks their work on their personal Kanban board and updates task status.</p>
+          <h4>Track on My Board</h4>
+          <p>Everyone tracks their work on their personal board, uploads PDF deliverables, and updates task status.</p>
         </div>
       </div>
     </div>
@@ -147,69 +130,6 @@
       window.location.href = 'dashboard.html';
     }
 
-    // ── Real-time live projects from localStorage ──────────────────
-    function loadLiveProjects() {
-      const projects = APP.getProjects();
-      const tasks    = APP.getTasks();
-      const container = document.getElementById('liveProjectsContainer');
-      const statsEl   = document.getElementById('liveStats');
-
-      if (projects.length === 0) {
-        container.innerHTML = '<div class="live-empty">No projects yet.<br>Login to create your first project.</div>';
-        return;
-      }
-
-      // Show stats
-      statsEl.style.display = 'block';
-      document.getElementById('lsTotalProjects').textContent = projects.length + ' project' + (projects.length !== 1 ? 's' : '');
-      document.getElementById('lsTotalTasks').textContent    = tasks.length + ' task' + (tasks.length !== 1 ? 's' : '');
-
-      // Show up to 4 most recent active projects
-      const recent = projects
-        .filter(p => p.status !== 'Completed')
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 4);
-
-      if (recent.length === 0) {
-        // All completed — show latest 4
-        const all = [...projects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
-        container.innerHTML = renderLiveCards(all, tasks);
-      } else {
-        container.innerHTML = renderLiveCards(recent, tasks);
-      }
-    }
-
-    function renderLiveCards(projects, allTasks) {
-      return projects.map(p => {
-        const ptasks = allTasks.filter(t => t.projectId === p.id);
-        const done   = ptasks.filter(t => t.status === 'Done').length;
-        const pct    = ptasks.length ? Math.round((done / ptasks.length) * 100) : 0;
-        const fillColor = pct === 100 ? '#A5D6A7' : (p.priority === 'High' ? '#EF9A9A' : p.priority === 'Medium' ? '#FFE082' : '#A5D6A7');
-        const overdue = p.dueDate && new Date(p.dueDate) < new Date() && p.status !== 'Completed';
-        return `
-          <div class="live-card prio-${p.priority}">
-            <div class="lc-name">${escapeHtml(p.title)}</div>
-            <div class="lc-bar"><div class="lc-fill" style="width:${pct}%;background:${fillColor};"></div></div>
-            <div class="lc-meta">
-              ${pct}% done &nbsp;·&nbsp; ${ptasks.length} task${ptasks.length !== 1 ? 's' : ''}
-              ${overdue ? ' &nbsp;·&nbsp; <span style="color:#EF9A9A;">Overdue</span>' : ''}
-              ${p.dueDate ? ' &nbsp;·&nbsp; Due ' + formatShortDate(p.dueDate) : ''}
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    function formatShortDate(d) {
-      return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    }
-
-    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-
-    // Load on page open
-    loadLiveProjects();
-
-    // Poll every 5 seconds for live updates (in case another tab adds a project)
-    setInterval(loadLiveProjects, 5000);
   </script>
 </body>
 </html>
